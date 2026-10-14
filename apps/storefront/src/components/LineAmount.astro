@@ -1,0 +1,57 @@
+---
+import { formatMoney } from '../lib/money.js';
+import type { CartLine } from '../lib/types.js';
+
+/**
+ * A line's unit price or total, with the regular price struck during a sale (3a). The amounts
+ * come from the cart; the struck total is the original unit price times the quantity, display
+ * only.
+ */
+interface Props {
+  readonly line: CartLine;
+  readonly show: 'unit' | 'total';
+  /** "$28.00 each", for stacked layouts that have no Price column. */
+  readonly each?: boolean;
+}
+
+const { line, show, each = false } = Astro.props;
+const { cart, locale } = Astro.locals;
+const currency = cart!.currency;
+const format = (amount: number) => formatMoney(amount, currency, locale);
+
+const sale = line.originalUnitPrice !== null && line.originalUnitPrice > line.unitPrice;
+const now = show === 'unit' ? line.unitPrice : line.total;
+const was = sale ? (show === 'unit' ? line.originalUnitPrice! : line.originalUnitPrice! * line.quantity) : null;
+const suffix = each ? ' each' : '';
+---
+
+<span class:list={['amount', show]}>
+  <span aria-hidden={was !== null ? 'true' : undefined} class:list={{ now: was !== null }}>{format(now)}{suffix}</span>
+  {was !== null && <s aria-hidden="true">{format(was)}</s>}
+  {was !== null && <span class="visually-hidden">Sale price {format(now)}{suffix}, was {format(was)}</span>}
+</span>
+
+<style>
+  .amount {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: 0 var(--space-2);
+    align-items: baseline;
+  }
+
+  .total {
+    flex-direction: column;
+    align-items: flex-end;
+    font-weight: 600;
+  }
+
+  .now {
+    color: var(--color-sale);
+  }
+
+  s {
+    color: var(--color-muted);
+    font-weight: 400;
+    font-size: 0.875em;
+  }
+</style>

@@ -1,0 +1,17 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "declaration": false,
+    "declarationMap": false,
+    "paths": {
+      "@trestle/core": ["./packages/core/src/index.ts"],
+      "@trestle/api-store": ["./packages/api-store/src/index.ts"],
+      "@trestle/api-admin": ["./packages/api-admin/src/index.ts"],
+      "@trestle/sdk": ["./packages/sdk/src/index.ts"]
+    }
+  },
+  "include": ["packages/*/src", "apps/*/src", "apps/storefront/wireframes", "vitest.config.ts"],
+  // The storefront imports Astro's virtual modules; `astro check` covers it (see the typecheck script).
+  "exclude": ["apps/storefront/src"]
+}

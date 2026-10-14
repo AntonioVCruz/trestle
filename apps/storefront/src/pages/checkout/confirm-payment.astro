@@ -1,0 +1,104 @@
+---
+import Checkout from '../../layouts/Checkout.astro';
+import { checkoutRedirect, placeOrder } from '../../lib/checkout-flow.js';
+import { formatMoney } from '../../lib/money.js';
+import { selectPaymentMethod } from '../../lib/store-api.js';
+
+/**
+ * 3c: the payment needs the shopper to confirm it (`payment_requires_action`). A real provider
+ * mounts its confirmation step here from the payment's client data, then the order is placed
+ * again. The test provider has no such step, so this page stands in for one, the way card test
+ * sandboxes do: Approve prepares a payment that succeeds and places the order; Fail goes back to
+ * step 3 (as 1w).
+ */
+const { cart, locale } = Astro.locals;
+const away = checkoutRedirect(cart, 'review');
+if (away) return Astro.redirect(away);
+const payment = cart!.paymentMethod!;
+const simulated = payment.providerId === 'test';
+
+if (Astro.request.method === 'POST') {
+  const form = await Astro.request.formData();
+  if (!simulated || form.get('decision') !== 'approve') return Astro.redirect('/checkout/payment?error=payment_action_failed', 303);
+  const approved = await selectPaymentMethod(cart!.id, payment.providerId, { outcome: 'authorize' });
+  if (!approved.ok) return Astro.redirect(`/checkout/payment?error=${approved.code}`, 303);
+  return Astro.redirect(await placeOrder(approved.cart, crypto.randomUUID(), Astro.cookies, Astro.url), 303);
+}
+---
+
+<Checkout title="Confirm your payment">
+  <section class="confirm" aria-labelledby="confirm-title">
+    <div class="head">
+      <h1 id="confirm-title">Confirm your payment</h1>
+      <a href="/checkout/payment?error=payment_action_failed" class="close" aria-label="Cancel and choose payment again">✕</a>
+    </div>
+    <p>Your bank needs you to confirm this {formatMoney(cart!.total, cart!.currency, locale)} payment.</p>
+
+    {
+      simulated ? (
+        <form method="post" class="provider">
+          <p class="hint">Test payments: this stands in for the bank’s confirmation step.</p>
+          <button type="submit" name="decision" value="approve" class="button">
+            Approve payment
+          </button>
+          <button type="submit" name="decision" value="fail" class="button button-secondary">
+            Fail confirmation
+          </button>
+        </form>
+      ) : (
+        <div class="provider">
+          <p>{payment.name} needs a confirmation step this storefront can’t show yet. Please choose another payment method.</p>
+          <a class="button" href="/checkout/payment?error=payment_action_failed">
+            Choose another method
+          </a>
+        </div>
+      )
+    }
+  </section>
+</Checkout>
+
+<style>
+  .confirm {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    max-width: 32rem;
+    margin: var(--space-6) auto;
+  }
+
+  .head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  h1 {
+    font-size: 1.375rem;
+    font-weight: 500;
+  }
+
+  p {
+    margin: 0;
+  }
+
+  .close {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    text-decoration: none;
+  }
+
+  .provider {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    padding: var(--space-6);
+    border: 1px dashed var(--color-muted);
+    border-radius: var(--radius);
+    background: var(--color-surface);
+  }
+</style>

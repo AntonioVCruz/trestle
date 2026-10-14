@@ -1,0 +1,131 @@
+---
+import AddressFields from '../../components/checkout/AddressFields.astro';
+import Checkout from '../../layouts/Checkout.astro';
+import { checkoutRedirect } from '../../lib/checkout-flow.js';
+import { ADDRESS_FIELDS, billsToShipping, checkoutErrorMessage, fieldName, readAddressForm } from '../../lib/checkout.js';
+import { setCartAddresses } from '../../lib/store-api.js';
+import type { Address } from '../../lib/types.js';
+
+/**
+ * Step 1 (1r): email and addresses, in one call. The form posts back to this page: errors are
+ * shown next to their fields with a summary on top; success goes on to shipping.
+ */
+const { cart } = Astro.locals;
+const away = checkoutRedirect(cart, 'address');
+if (away) return Astro.redirect(away);
+
+let errors: Record<string, string> = {};
+let apiError: string | null = null;
+let values: Record<string, string> = { email: cart!.email ?? '' };
+const fill = (section: 'shipping' | 'billing', address: Address | null) => {
+  for (const f of ADDRESS_FIELDS) values[fieldName(section, f)] = address?.[f] ?? '';
+};
+fill('shipping', cart!.shippingAddress);
+fill('billing', cart!.billingAddress);
+let billingSame = billsToShipping(cart!);
+
+if (Astro.request.method === 'POST') {
+  const form = await Astro.request.formData();
+  values = Object.fromEntries([...form.entries()].filter((e): e is [string, string] => typeof e[1] === 'string'));
+  billingSame = form.has('billingSame');
+  const read = readAddressForm(form);
+  if (read.ok) {
+    const result = await setCartAddresses(cart!.id, read.value);
+    if (result.ok) return Astro.redirect('/checkout/shipping', 303);
+    apiError = result.code;
+  } else {
+    errors = read.errors;
+  }
+  Astro.response.status = 400;
+}
+
+const problems = Object.entries(errors);
+const idOf = (name: string) => (name === 'email' ? 'email' : name.replace('.', '-'));
+---
+
+<Checkout title="Address" step="address">
+  <h1 class="step-heading">Step 1 of 4: Address</h1>
+
+  {
+    problems.length > 0 && (
+      <div class="banner" role="alert" tabindex="-1" data-focus-on-load>
+        <p class="title">
+          {problems.length === 1 ? 'There is 1 problem' : `There are ${problems.length} problems`} with your details
+        </p>
+        <ul>
+          {problems.map(([name, message]) => (
+            <li>
+              <a href={`#${idOf(name)}`}>{message}</a>
+            </li>
+          ))}
+        </ul>
+      </div>
+    )
+  }
+  {
+    apiError && (
+      <div class="banner" role="alert" tabindex="-1" data-focus-on-load>
+        <p class="title">{checkoutErrorMessage(apiError).title}</p>
+        <p>{checkoutErrorMessage(apiError).body}</p>
+      </div>
+    )
+  }
+
+  <form method="post" class="checkout-form" novalidate>
+    <div class="field">
+      <label for="email">Email</label>
+      <input
+        id="email"
+        name="email"
+        type="email"
+        value={values.email}
+        autocomplete="email"
+        required
+        aria-invalid={errors.email ? 'true' : undefined}
+        aria-describedby={errors.email ? 'email-hint email-error' : 'email-hint'}
+      />
+      <p class="hint" id="email-hint">For your receipt and order updates</p>
+      {
+        errors.email && (
+          <p class="field-error" id="email-error">
+            {errors.email}
+          </p>
+        )
+      }
+    </div>
+
+    <fieldset>
+      <legend>Shipping address</legend>
+      <AddressFields section="shipping" values={values} errors={errors} />
+    </fieldset>
+
+    <label class="checkbox">
+      <input type="checkbox" name="billingSame" checked={billingSame} data-billing-same />
+      Billing address same as shipping
+    </label>
+
+    <fieldset data-billing-fields>
+      <legend>Billing address</legend>
+      <AddressFields section="billing" values={values} errors={errors} />
+    </fieldset>
+
+    <div class="step-actions">
+      <button type="submit" class="button">Continue to shipping</button>
+    </div>
+  </form>
+</Checkout>
+
+<script>
+  // Billing fields show only when billing differs. Without JavaScript they stay visible, and
+  // the server ignores them while the box is ticked.
+  const same = document.querySelector<HTMLInputElement>('[data-billing-same]');
+  const billing = document.querySelector<HTMLFieldSetElement>('[data-billing-fields]');
+  if (same && billing) {
+    const sync = () => {
+      billing.hidden = same.checked;
+      billing.disabled = same.checked;
+    };
+    same.addEventListener('change', sync);
+    sync();
+  }
+</script>

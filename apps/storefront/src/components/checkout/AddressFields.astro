@@ -1,0 +1,82 @@
+---
+import { fieldName } from '../../lib/checkout.js';
+import { countryOptions } from '../../lib/countries.js';
+
+/**
+ * One address in step 1 (1r): every field labelled, with autocomplete tokens, and its error
+ * next to it, linked by aria-describedby.
+ */
+interface Props {
+  readonly section: 'shipping' | 'billing';
+  /** Current values by form field name. */
+  readonly values: Readonly<Record<string, string>>;
+  readonly errors: Readonly<Record<string, string>>;
+}
+
+const { section, values, errors } = Astro.props;
+const countries = countryOptions(Astro.locals.locale);
+
+type Field = Parameters<typeof fieldName>[1];
+const field = (name: Field, label: string, autocomplete: string, extra: { optional?: boolean; type?: 'text' | 'tel' } = {}) => {
+  const id = `${section}-${name}`;
+  const full = fieldName(section, name);
+  const error = errors[full];
+  return { id, name: full, label: extra.optional ? `${label} (optional)` : label, value: values[full] ?? '', error, autocomplete: `${section} ${autocomplete}`, required: !extra.optional, type: extra.type ?? ('text' as const) };
+};
+
+const rows = [
+  [field('firstName', 'First name', 'given-name'), field('lastName', 'Last name', 'family-name')],
+  [field('country', 'Country', 'country')],
+  [field('line1', 'Address', 'address-line1')],
+  [field('line2', 'Apartment, suite', 'address-line2', { optional: true })],
+  [field('city', 'City', 'address-level2')],
+  [field('region', 'Region', 'address-level1', { optional: true }), field('postalCode', 'Postal code', 'postal-code')],
+  [field('phone', 'Phone', 'tel', { optional: true, type: 'tel' })],
+];
+---
+
+{
+  rows.map((row) => (
+    <div class:list={{ 'field-row': row.length > 1 }}>
+      {row.map((f) => (
+        <div class="field">
+          <label for={f.id}>{f.label}</label>
+          {f.name.endsWith('.country') ? (
+            <select
+              id={f.id}
+              name={f.name}
+              autocomplete={f.autocomplete}
+              required
+              aria-invalid={f.error ? 'true' : undefined}
+              aria-describedby={f.error ? `${f.id}-error` : undefined}
+            >
+              <option value="">Choose a country</option>
+              {countries.map((c) => (
+                <option value={c.code} selected={c.code === f.value}>
+                  {c.name}
+                </option>
+              ))}
+            </select>
+          ) : (
+            <input
+              id={f.id}
+              name={f.name}
+              type={f.type}
+              value={f.value}
+              autocomplete={f.autocomplete}
+              required={f.required}
+              maxlength="200"
+              aria-invalid={f.error ? 'true' : undefined}
+              aria-describedby={f.error ? `${f.id}-error` : undefined}
+            />
+          )}
+          {f.error && (
+            <p class="field-error" id={`${f.id}-error`}>
+              {f.error}
+            </p>
+          )}
+        </div>
+      ))}
+    </div>
+  ))
+}

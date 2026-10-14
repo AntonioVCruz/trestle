@@ -1,0 +1,23 @@
+{
+  "name": "@trestle/storefront",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "The reference storefront: a server-rendered Astro app that reaches the platform only through the Store API (ADR 0003, ADR 0020).",
+  "license": "MIT",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "check": "astro check",
+    "start": "node server.mjs"
+  },
+  "dependencies": {
+    "@astrojs/node": "^11.1.7",
+    "@trestle/sdk": "^0.0.0",
+    "astro": "^7.3.6"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.10"
+  }
+}

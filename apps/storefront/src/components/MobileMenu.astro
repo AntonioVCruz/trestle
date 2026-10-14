@@ -1,0 +1,159 @@
+---
+import CurrencyPicker from './CurrencyPicker.astro';
+
+/**
+ * Mobile menu (wireframe 1b). A modal dialog traps focus and closes on Escape, returning focus to
+ * the menu button, all natively. Parents are disclosures; children are links.
+ */
+const { categories } = Astro.locals;
+---
+
+<dialog id="mobile-menu" class="menu" aria-labelledby="mobile-menu-title">
+  <div class="menu-header">
+    <h2 id="mobile-menu-title">Menu</h2>
+    <button type="button" class="close" commandfor="mobile-menu" command="close" aria-label="Close menu">✕</button>
+  </div>
+  <nav aria-label="Categories">
+    <ul role="list" class="categories">
+      {
+        categories.map((top) => (
+          <li>
+            {top.children.length > 0 ? (
+              <details>
+                <summary>{top.name}</summary>
+                <ul role="list" class="children">
+                  <li>
+                    <a href={`/categories/${top.handle}`}>Shop all {top.name}</a>
+                  </li>
+                  {top.children.map((child) => (
+                    <li>
+                      <a href={`/categories/${child.handle}`}>{child.name}</a>
+                    </li>
+                  ))}
+                </ul>
+              </details>
+            ) : (
+              <a href={`/categories/${top.handle}`} class="leaf">
+                {top.name}
+              </a>
+            )}
+          </li>
+        ))
+      }
+    </ul>
+  </nav>
+  <CurrencyPicker id="currency-menu" />
+</dialog>
+
+<script>
+  // Invoker commands (`commandfor`) open and close the dialog without script where supported.
+  if (!('command' in HTMLButtonElement.prototype)) {
+    for (const button of document.querySelectorAll<HTMLButtonElement>('button[commandfor]')) {
+      const target = document.getElementById(button.getAttribute('commandfor') ?? '');
+      if (!(target instanceof HTMLDialogElement)) continue;
+      const command = button.getAttribute('command');
+      button.addEventListener('click', () => (command === 'show-modal' ? target.showModal() : target.close()));
+    }
+  }
+</script>
+
+<style>
+  .menu {
+    width: min(100vw, 26rem);
+    max-width: none;
+    height: 100%;
+    max-height: none;
+    margin: 0;
+    padding: var(--space-4);
+    border: 0;
+    background: var(--color-bg);
+    color: var(--color-fg);
+  }
+
+  .menu::backdrop {
+    background: rgb(0 0 0 / 0.4);
+  }
+
+  .menu-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: var(--space-3);
+    border-bottom: 1px solid var(--color-fg);
+  }
+
+  .menu-header h2 {
+    font-size: 1.25rem;
+    font-weight: 500;
+  }
+
+  .close {
+    width: 2.75rem;
+    height: 2.75rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    background: none;
+    font: inherit;
+    cursor: pointer;
+  }
+
+  ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .categories {
+    margin-bottom: var(--space-6);
+  }
+
+  .categories > li {
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  summary,
+  .leaf {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 3.25rem;
+    font-size: 1.0625rem;
+    text-decoration: none;
+    cursor: pointer;
+    list-style: none;
+  }
+
+  summary::-webkit-details-marker {
+    display: none;
+  }
+
+  summary::after {
+    content: '▾';
+    font-size: 0.75em;
+  }
+
+  details[open] summary::after {
+    content: '▴';
+  }
+
+  .leaf::after {
+    content: '›';
+  }
+
+  .children {
+    background: var(--color-surface);
+  }
+
+  .children a {
+    display: flex;
+    align-items: center;
+    min-height: 3rem;
+    padding-inline: var(--space-4);
+    border-top: 1px solid var(--color-border);
+    text-decoration: none;
+  }
+
+  .children li:first-child a {
+    text-decoration: underline;
+  }
+</style>

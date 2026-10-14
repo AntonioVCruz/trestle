@@ -1,0 +1,8 @@
+---
+import CartDrawerContents from '../../components/CartDrawerContents.astro';
+
+/** The cart drawer's contents, where the cart endpoints redirect the drawer script's posts. */
+export const partial = true;
+---
+
+<CartDrawerContents params={Astro.url.searchParams} />

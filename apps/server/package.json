@@ -1,0 +1,20 @@
+{
+  "name": "@trestle/server",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "The deployable: one image, run as web | worker | scheduler | migrate.",
+  "license": "MIT",
+  "main": "./dist/main.js",
+  "scripts": {
+    "start": "node dist/main.js web"
+  },
+  "dependencies": {
+    "@trestle/api-admin": "^0.0.0",
+    "@trestle/api-store": "^0.0.0",
+    "@trestle/core": "^0.0.0",
+    "fastify": "^5.12.5",
+    "kysely": "^0.29.6",
+    "pino": "^10.3.1"
+  }
+}

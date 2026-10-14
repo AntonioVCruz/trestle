@@ -1,0 +1,20 @@
+---
+import { addressLines } from '../../lib/checkout.js';
+
+// Who and where, with the way back to change them (1s, 3f).
+const { cart } = Astro.locals;
+const address = cart!.shippingAddress!;
+---
+
+<dl class="recap">
+  <div>
+    <dt>Contact</dt>
+    <dd>{cart!.email}</dd>
+    <a href="/checkout/address">Change<span class="visually-hidden"> contact</span></a>
+  </div>
+  <div>
+    <dt>Ship to</dt>
+    <dd>{addressLines(address).slice(1).join(', ')}</dd>
+    <a href="/checkout/address">Change<span class="visually-hidden"> shipping address</span></a>
+  </div>
+</dl>

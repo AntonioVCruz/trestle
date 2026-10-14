@@ -1,0 +1,150 @@
+---
+import { lineTitle } from '../../lib/cart.js';
+import type { PriceChange } from '../../lib/checkout.js';
+import { formatMoney } from '../../lib/money.js';
+
+/**
+ * The cart as checkout shows it (1u): lines, then the cart's own totals. Shipping appears once a
+ * method is chosen; the storefront never adds anything up. After a re-pricing (3d), changed
+ * lines say so and show what they cost before.
+ */
+interface Props {
+  readonly changes?: readonly PriceChange[];
+}
+
+const { changes = [] } = Astro.props;
+const { cart, locale } = Astro.locals;
+const format = (amount: number) => formatMoney(amount, cart!.currency, locale);
+const lines = cart!.lines.filter((l) => l.available);
+const adjustments = cart!.adjustments.filter((a) => !a.included);
+---
+
+<div class="summary">
+  <ul role="list" class="lines">
+    {
+      lines.map((line) => {
+        const change = changes.find((c) => c.lineId === line.id);
+        return (
+          <li>
+            <div class="placeholder-image thumb" aria-hidden="true" />
+            <div class="info">
+              <span>{lineTitle(line)}</span>
+              <span class="muted">
+                Qty {line.quantity}
+                {change && <span class="chip-changed">Changed</span>}
+              </span>
+            </div>
+            <div class="amount">
+              <span>{format(line.total)}</span>
+              {change && <span class="muted">previously {format(change.totalBefore)}</span>}
+            </div>
+          </li>
+        );
+      })
+    }
+  </ul>
+  <dl>
+    <div>
+      <dt>Subtotal</dt>
+      <dd>{format(cart!.subtotal)}</dd>
+    </div>
+    {
+      adjustments.map((a) => (
+        <div>
+          <dt>{a.kind === 'shipping' ? 'Shipping' : a.label}</dt>
+          <dd>{format(a.amount)}</dd>
+        </div>
+      ))
+    }
+    {
+      !adjustments.some((a) => a.kind === 'shipping') && (
+        <div>
+          <dt>Shipping</dt>
+          <dd class="muted">at next step</dd>
+        </div>
+      )
+    }
+    <div class="total">
+      <dt>Total</dt>
+      <dd>{format(cart!.total)} {cart!.currency}</dd>
+    </div>
+  </dl>
+</div>
+
+<style>
+  .summary {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+  }
+
+  .lines {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    margin: 0;
+    padding: 0 0 var(--space-4);
+    list-style: none;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .lines li {
+    display: grid;
+    grid-template-columns: 3.5rem 1fr auto;
+    gap: var(--space-3);
+    align-items: center;
+  }
+
+  .thumb {
+    aspect-ratio: 1;
+  }
+
+  .info,
+  .amount {
+    display: flex;
+    flex-direction: column;
+    font-size: 0.9375rem;
+  }
+
+  .amount {
+    align-items: flex-end;
+  }
+
+  .muted {
+    color: var(--color-muted);
+    font-size: 0.8125rem;
+  }
+
+  .chip-changed {
+    margin-left: var(--space-2);
+    padding: 0 var(--space-2);
+    border: 1px solid var(--color-fg);
+    border-radius: 999px;
+    color: var(--color-fg);
+  }
+
+  dl {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    margin: 0;
+  }
+
+  dl div {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--space-4);
+  }
+
+  dd {
+    margin: 0;
+  }
+
+  .total {
+    margin-top: var(--space-2);
+    padding-top: var(--space-3);
+    border-top: 1px solid var(--color-border);
+    font-size: 1.125rem;
+    font-weight: 600;
+  }
+</style>

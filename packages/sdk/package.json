@@ -1,0 +1,24 @@
+{
+  "name": "@trestle/sdk",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Typed clients for the Store and Admin APIs, generated from their OpenAPI documents.",
+  "license": "MIT",
+  "exports": {
+    ".": {
+      "source": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "generate": "openapi-typescript ../../openapi/store.json -o src/generated/store.ts && openapi-typescript ../../openapi/admin.json -o src/generated/admin.ts"
+  },
+  "dependencies": {
+    "openapi-fetch": "^0.17.0"
+  }
+}

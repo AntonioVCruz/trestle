@@ -1,0 +1,107 @@
+---
+import CartDrawerContents from './CartDrawerContents.astro';
+
+/**
+ * The cart drawer (1m): a modal dialog, so focus stays inside, Escape closes it and focus returns
+ * to the Cart button. It needs JavaScript; without it, the Cart button is a link to /cart and
+ * Add to cart lands there.
+ */
+---
+
+<dialog id="cart-drawer" class="drawer" aria-labelledby="cart-drawer-title">
+  <div data-cart-drawer-body>
+    <CartDrawerContents params={new URLSearchParams()} />
+  </div>
+</dialog>
+
+<script>
+  const drawer = document.getElementById('cart-drawer') as HTMLDialogElement;
+  const body = drawer.querySelector<HTMLElement>('[data-cart-drawer-body]')!;
+  const onCartPage = location.pathname === '/cart';
+
+  /** Swaps in the fragment and updates every cart count. */
+  const render = (html: string) => {
+    const fragment = new DOMParser().parseFromString(html, 'text/html').querySelector<HTMLElement>('[data-cart-fragment]');
+    if (!fragment) throw new Error('No cart in the response');
+    body.replaceChildren(fragment);
+    const count = fragment.dataset.cartCount ?? '0';
+    for (const element of document.querySelectorAll<HTMLElement>('[data-cart-count]:not([data-cart-fragment])')) {
+      element.textContent = count;
+    }
+    for (const link of document.querySelectorAll<HTMLElement>('[data-cart-open]')) {
+      link.setAttribute('aria-label', `Cart, ${count} ${count === '1' ? 'item' : 'items'}`);
+    }
+  };
+
+  /** After a change inside the drawer: back to the same control, or to the message. */
+  const restoreFocus = (focusKey: string | null) => {
+    const target =
+      (focusKey && body.querySelector<HTMLElement>(`[data-focus="${focusKey}"]:not(:disabled)`)) ||
+      body.querySelector<HTMLElement>('[role="alert"], [role="status"]:not(:empty)');
+    if (target) {
+      if (!target.matches('button, a, input')) target.tabIndex = -1;
+      target.focus();
+    }
+  };
+
+  document.addEventListener('click', (event) => {
+    const target = event.target as Element;
+    if (target.closest('[data-cart-close]')) drawer.close();
+    else if (target.closest('[data-cart-open]') && !onCartPage) {
+      event.preventDefault();
+      drawer.showModal();
+    }
+  });
+
+  document.addEventListener('submit', async (event) => {
+    const form = (event.target as Element).closest<HTMLFormElement>('form[data-cart-form]');
+    if (!form || onCartPage) return;
+    event.preventDefault();
+    if (form.getAttribute('aria-busy') === 'true') return;
+    const submitter = event.submitter as HTMLButtonElement | null;
+    const data = new FormData(form, submitter);
+    data.set('return', '/fragments/cart');
+    const opening = !drawer.open;
+    form.setAttribute('aria-busy', 'true');
+    try {
+      // The endpoint redirects to the fragment, which fetch follows.
+      const response = await fetch(form.action, { method: 'POST', body: data });
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      render(await response.text());
+      // Opening focuses the Close button (1m); the message is announced as a live region.
+      if (opening) drawer.showModal();
+      else restoreFocus(submitter?.dataset.focus ?? null);
+    } catch {
+      // Without a fragment, do it the way the page works without JavaScript.
+      form.removeAttribute('data-cart-form');
+      const back = form.querySelector<HTMLInputElement>('input[name="return"]');
+      if (back) back.value = '/cart';
+      submitter ? form.requestSubmit(submitter) : form.requestSubmit();
+    } finally {
+      form.removeAttribute('aria-busy');
+    }
+  });
+</script>
+
+<style>
+  .drawer {
+    width: min(100vw, 26rem);
+    max-width: none;
+    height: 100%;
+    max-height: none;
+    margin: 0 0 0 auto;
+    padding: 0;
+    border: 0;
+    border-left: 1px solid var(--color-fg);
+    background: var(--color-bg);
+    color: var(--color-fg);
+  }
+
+  .drawer::backdrop {
+    background: rgb(0 0 0 / 0.4);
+  }
+
+  [data-cart-drawer-body] {
+    height: 100%;
+  }
+</style>

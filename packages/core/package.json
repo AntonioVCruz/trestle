@@ -1,0 +1,22 @@
+{
+  "name": "@trestle/core",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Commerce core: kernel primitives and domain modules.",
+  "license": "MIT",
+  "exports": {
+    ".": {
+      "source": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "dependencies": {
+    "kysely": "^0.29.6",
+    "pg": "^8.23.1"
+  }
+}

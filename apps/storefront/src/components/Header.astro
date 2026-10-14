@@ -1,0 +1,112 @@
+---
+import CategoryNav from './CategoryNav.astro';
+import CurrencyPicker from './CurrencyPicker.astro';
+import MobileMenu from './MobileMenu.astro';
+
+// Search and the language picker wait for Store API support (see the wireframes).
+const { channel, cart } = Astro.locals;
+const count = cart?.itemCount ?? 0;
+---
+
+{
+  channel.currencies.length > 1 && (
+    <div class="topbar">
+      <div class="container">
+        <CurrencyPicker id="currency-top" />
+      </div>
+    </div>
+  )
+}
+<header class="header">
+  <div class="container bar">
+    <button type="button" class="menu-button" commandfor="mobile-menu" command="show-modal" aria-haspopup="dialog">
+      <span aria-hidden="true">☰</span>
+      <span class="visually-hidden">Menu</span>
+    </button>
+    <a href="/" class="brand">{channel.name}</a>
+    <nav aria-label="Categories" class="desktop-nav">
+      <CategoryNav />
+    </nav>
+    <a href="/cart" class="cart-button" data-cart-open aria-label={`Cart, ${count} ${count === 1 ? 'item' : 'items'}`}>
+      Cart&nbsp;·&nbsp;<span data-cart-count>{count}</span>
+    </a>
+  </div>
+</header>
+<MobileMenu />
+
+<style>
+  .topbar {
+    display: none;
+    background: var(--color-surface);
+  }
+
+  .topbar .container {
+    display: flex;
+    justify-content: flex-end;
+    padding-block: var(--space-1);
+  }
+
+  .header {
+    position: relative;
+    border-bottom: 1px solid var(--color-fg);
+  }
+
+  .bar {
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+    min-height: 4rem;
+  }
+
+  .brand {
+    font-size: 1.25rem;
+    font-weight: 500;
+    text-decoration: none;
+    text-transform: uppercase;
+  }
+
+  .menu-button {
+    width: 2.75rem;
+    height: 2.75rem;
+    border: 1px solid var(--color-fg);
+    border-radius: var(--radius);
+    background: none;
+    font-size: 1.25rem;
+    cursor: pointer;
+  }
+
+  .desktop-nav {
+    display: none;
+  }
+
+  .cart-button {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.75rem;
+    margin-left: auto;
+    padding: 0 var(--space-4);
+    border: 1px solid var(--color-fg);
+    border-radius: var(--radius);
+    text-decoration: none;
+    white-space: nowrap;
+  }
+
+  @media (min-width: 900px) {
+    .topbar {
+      display: block;
+    }
+
+    .menu-button {
+      display: none;
+    }
+
+    .desktop-nav {
+      display: block;
+      margin-left: var(--space-6);
+    }
+
+    .bar {
+      min-height: 4.5rem;
+    }
+  }
+</style>

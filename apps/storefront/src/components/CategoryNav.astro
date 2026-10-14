@@ -1,0 +1,120 @@
+---
+/**
+ * Desktop category menu (wireframe 1c). Each parent is a disclosure that opens on click or Enter,
+ * never on hover alone; `name` makes the panels exclusive, so opening one closes the other.
+ */
+const { categories } = Astro.locals;
+---
+
+<ul class="nav" role="list">
+  {
+    categories.map((top) => (
+      <li>
+        {top.children.length > 0 ? (
+          <details name="category-menu" data-menu>
+            <summary>{top.name}</summary>
+            <div class="panel">
+              <ul role="list" class="container">
+                <li class="panel-heading">{top.name}</li>
+                <li>
+                  <a href={`/categories/${top.handle}`}>Shop all {top.name}</a>
+                </li>
+                {top.children.map((child) => (
+                  <li>
+                    <a href={`/categories/${child.handle}`}>{child.name}</a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </details>
+        ) : (
+          <a href={`/categories/${top.handle}`}>{top.name}</a>
+        )}
+      </li>
+    ))
+  }
+</ul>
+
+<script>
+  // Escape and clicks outside close an open menu; Escape returns focus to its toggle.
+  const menus = [...document.querySelectorAll<HTMLDetailsElement>('details[data-menu]')];
+  document.addEventListener('keydown', (event) => {
+    if (event.key !== 'Escape') return;
+    const open = menus.find((menu) => menu.open);
+    if (!open) return;
+    open.open = false;
+    open.querySelector('summary')?.focus();
+  });
+  document.addEventListener('click', (event) => {
+    for (const menu of menus) if (menu.open && !menu.contains(event.target as Node)) menu.open = false;
+  });
+</script>
+
+<style>
+  .nav {
+    display: flex;
+    gap: var(--space-6);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  a,
+  summary {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.75rem;
+    text-decoration: none;
+    cursor: pointer;
+  }
+
+  summary {
+    list-style: none;
+    gap: var(--space-1);
+  }
+
+  summary::-webkit-details-marker {
+    display: none;
+  }
+
+  summary::after {
+    content: '▾';
+    font-size: 0.75em;
+  }
+
+  details[open] summary {
+    text-decoration: underline;
+    text-underline-offset: 0.4em;
+  }
+
+  details[open] summary::after {
+    content: '▴';
+  }
+
+  .panel {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 100%;
+    z-index: 5;
+    background: var(--color-bg);
+    border-bottom: 1px solid var(--color-border);
+    padding-block: var(--space-6);
+  }
+
+  .panel ul {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+    list-style: none;
+  }
+
+  .panel a {
+    min-height: 2.25rem;
+  }
+
+  .panel-heading {
+    font-size: 0.875rem;
+    font-weight: 600;
+  }
+</style>

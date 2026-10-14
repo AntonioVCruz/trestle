@@ -1,0 +1,373 @@
+---
+import Breadcrumb from '../../components/Breadcrumb.astro';
+import PriceTag from '../../components/PriceTag.astro';
+import Base from '../../layouts/Base.astro';
+import { deepestPath } from '../../lib/categories.js';
+import { summarizePrice } from '../../lib/prices.js';
+import { storeApi } from '../../lib/store-api.js';
+import { initialPicks, optionParam, purchaseState, resolveVariant, valueState } from '../../lib/variants.js';
+
+// Product page (1h, 1i, 1j, 1l). Media, stock and related products wait for Store API support.
+const { categories, currency, locale } = Astro.locals;
+const { data: product, response } = await storeApi.GET('/store/v1/products/{handle}', {
+  params: { path: { handle: Astro.params.handle! }, query: { currency } },
+});
+if (response.status === 404) return Astro.rewrite('/404');
+if (!product) throw new Error(`Loading product "${Astro.params.handle}" failed with HTTP ${response.status}`);
+
+const path = deepestPath(categories, product.categoryIds);
+const trail = [
+  { name: 'Home', href: '/' },
+  ...path.map((c) => ({ name: c.name, href: `/categories/${c.handle}` })),
+  { name: product.title },
+];
+
+const picks = initialPicks(product, Astro.url.searchParams);
+const variant = resolveVariant(product, picks);
+const summary = variant ? (variant.price && { price: variant.price, from: false }) : summarizePrice(product);
+const purchase = purchaseState(product, picks, currency);
+
+/** "Black, unavailable in M": a value that does not combine with the other picks (1l). */
+const unavailableLabel = (option: string) =>
+  Object.entries(picks)
+    .filter(([name]) => name !== option)
+    .map(([, value]) => value)
+    .join(' / ');
+
+const paragraphs = (product.description ?? '').split(/\n\s*\n/).filter((p) => p.trim() !== '');
+const optionId = (option: number, value: number) => `option-${option}-${value}`;
+
+// What the browser script needs to run the same selection rules. `<` is escaped so the JSON
+// cannot close the script element.
+const state = JSON.stringify({ options: product.options, variants: product.variants, locale, currency }).replaceAll('<', '\\u003c');
+---
+
+<Base title={product.title}>
+  <div class="container">
+    <Breadcrumb trail={trail} />
+    <div class="product">
+      <div class="placeholder-image image" aria-hidden="true"></div>
+
+      <div class="details">
+        <h1>{product.title}</h1>
+        <div aria-live="polite" aria-atomic="true">
+          <PriceTag summary={summary} />
+        </div>
+
+        <form method="get" class="options" data-variant-picker>
+          {
+            product.options.map((option, i) => (
+              <fieldset data-option={option.name}>
+                <legend>
+                  {option.name}: <strong data-picked>{picks[option.name] ?? ''}</strong>
+                </legend>
+                <div class="values">
+                  {option.values.map((value, j) => {
+                    const state = valueState(product, picks, option.name, value);
+                    return (
+                      <div class="value">
+                        <input
+                          type="radio"
+                          id={optionId(i, j)}
+                          name={optionParam(option.name)}
+                          value={value}
+                          checked={state === 'selected'}
+                          aria-disabled={state === 'unavailable' ? 'true' : undefined}
+                        />
+                        <label for={optionId(i, j)}>
+                          {value}
+                          <span class="visually-hidden" data-unavailable hidden={state !== 'unavailable'}>
+                            , unavailable in {unavailableLabel(option.name)}
+                          </span>
+                        </label>
+                      </div>
+                    );
+                  })}
+                </div>
+              </fieldset>
+            ))
+          }
+          {
+            product.options.length > 0 && (
+              <noscript>
+                <button type="submit" class="button button-secondary">
+                  Show this option
+                </button>
+              </noscript>
+            )
+          }
+        </form>
+
+        <p class="sku" data-sku hidden={!variant?.sku}>SKU: <span>{variant?.sku}</span></p>
+
+        <form method="post" action="/cart/lines" class="add" data-cart-form>
+          <input type="hidden" name="return" value="/cart" />
+          <input type="hidden" name="variantId" value={purchase.variantId ?? ''} data-variant-id />
+          <div class="quantity">
+            <button type="button" data-step="-1" aria-label="Decrease quantity" hidden>−</button>
+            <label for="quantity" class="visually-hidden">Quantity</label>
+            <input id="quantity" name="quantity" type="number" inputmode="numeric" min="1" max="1000" value="1" required />
+            <button type="button" data-step="1" aria-label="Increase quantity" hidden>+</button>
+          </div>
+          <button type="submit" class="button add-button" disabled={!purchase.variantId} data-add-button>
+            {purchase.label}
+          </button>
+        </form>
+
+        {
+          paragraphs.length > 0 && (
+            <section class="description" aria-labelledby="description">
+              <h2 id="description">Description</h2>
+              {paragraphs.map((p) => (
+                <p>{p}</p>
+              ))}
+            </section>
+          )
+        }
+      </div>
+    </div>
+  </div>
+  <script type="application/json" id="product-state" set:html={state} />
+</Base>
+
+<script>
+  import { priceText, summarizePrice } from '../../lib/prices.js';
+  import type { Product } from '../../lib/types.js';
+  import { pick, purchaseState, resolveVariant, valueState, type Picks } from '../../lib/variants.js';
+
+  type State = Pick<Product, 'options' | 'variants'> & { locale: string; currency: string };
+
+  const form = document.querySelector<HTMLFormElement>('[data-variant-picker]');
+  const stateElement = document.getElementById('product-state');
+  if (form && stateElement) {
+    const product = JSON.parse(stateElement.textContent!) as State;
+    const radios = [...form.querySelectorAll<HTMLInputElement>('input[type="radio"]')];
+    const optionOf = (radio: HTMLInputElement) => radio.closest<HTMLElement>('[data-option]')!.dataset.option!;
+    let picks: Picks = Object.fromEntries(radios.filter((r) => r.checked).map((r) => [optionOf(r), r.value]));
+
+    const render = () => {
+      for (const radio of radios) {
+        const option = optionOf(radio);
+        const state = valueState(product, picks, option, radio.value);
+        radio.checked = state === 'selected';
+        const unavailable = state === 'unavailable';
+        if (unavailable) radio.setAttribute('aria-disabled', 'true');
+        else radio.removeAttribute('aria-disabled');
+        const note = radio.labels?.[0]?.querySelector<HTMLElement>('[data-unavailable]');
+        if (note) {
+          const others = Object.entries(picks).filter(([name]) => name !== option).map(([, value]) => value);
+          note.hidden = !unavailable;
+          note.textContent = `, unavailable in ${others.join(' / ')}`;
+        }
+      }
+      for (const fieldset of form.querySelectorAll<HTMLElement>('[data-option]')) {
+        fieldset.querySelector('[data-picked]')!.textContent = picks[fieldset.dataset.option!] ?? '';
+      }
+
+      const variant = resolveVariant(product, picks);
+      const summary = variant ? variant.price && { price: variant.price, from: false } : summarizePrice(product);
+      const price = document.querySelector<HTMLElement>('[data-price]')!;
+      const unavailable = `Not available in ${product.currency}`;
+      const text = summary ? priceText(summary, product.locale) : { now: unavailable, was: null, saving: null, spoken: unavailable };
+      price.querySelector('[data-now]')!.textContent = text.now;
+      for (const [selector, value] of [['[data-was]', text.was], ['[data-saving]', text.saving]] as const) {
+        const element = price.querySelector<HTMLElement>(selector)!;
+        element.textContent = value ?? '';
+        element.hidden = value === null;
+      }
+      price.querySelector('[data-spoken]')!.textContent = text.spoken;
+
+      // Add to cart follows the selection: it names what is missing until a variant resolves.
+      const purchase = purchaseState(product, picks, product.currency);
+      document.querySelector<HTMLInputElement>('[data-variant-id]')!.value = purchase.variantId ?? '';
+      const addButton = document.querySelector<HTMLButtonElement>('[data-add-button]')!;
+      addButton.textContent = purchase.label;
+      addButton.disabled = !purchase.variantId;
+      const sku = document.querySelector<HTMLElement>('[data-sku]')!;
+      sku.hidden = !variant?.sku;
+      sku.querySelector('span')!.textContent = variant?.sku ?? '';
+
+      // Rule 4: the selection is in the URL, for sharing.
+      const url = new URL(location.href);
+      for (const key of [...url.searchParams.keys()]) url.searchParams.delete(key);
+      if (variant) url.searchParams.set('variant', variant.id);
+      history.replaceState(null, '', url);
+    };
+
+    // The stepper around the quantity field; without JavaScript the field alone does the job.
+    const quantity = document.querySelector<HTMLInputElement>('#quantity')!;
+    for (const button of document.querySelectorAll<HTMLButtonElement>('[data-step]')) {
+      button.hidden = false;
+      button.addEventListener('click', () => {
+        const next = (Number(quantity.value) || 1) + Number(button.dataset.step);
+        quantity.value = String(Math.min(Math.max(next, 1), 1000));
+      });
+    }
+
+    form.addEventListener('change', (event) => {
+      const radio = event.target as HTMLInputElement;
+      picks = pick(product, picks, optionOf(radio), radio.value);
+      render();
+    });
+    render();
+  }
+</script>
+
+<style>
+  .product {
+    display: grid;
+    gap: var(--space-6);
+  }
+
+  @media (min-width: 900px) {
+    .product {
+      grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+      gap: var(--space-12);
+    }
+  }
+
+  .image {
+    aspect-ratio: 1;
+  }
+
+  .details {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+  }
+
+  h1 {
+    font-size: 2rem;
+    font-weight: 500;
+  }
+
+  .options {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+  }
+
+  fieldset {
+    margin: 0;
+    padding: 0;
+    border: 0;
+  }
+
+  legend {
+    margin-bottom: var(--space-2);
+  }
+
+  .values {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+  }
+
+  .value {
+    position: relative;
+  }
+
+  /* The radio stays in the accessibility tree and the tab order; its label is the chip. */
+  .value input {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    margin: 0;
+  }
+
+  .value label {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 3rem;
+    min-height: 2.75rem;
+    padding: 0 var(--space-3);
+    border: 1px solid var(--color-fg);
+    border-radius: var(--radius);
+    cursor: pointer;
+  }
+
+  .value input:checked + label {
+    background: var(--color-accent);
+    color: var(--color-on-accent);
+  }
+
+  .value input[aria-disabled='true'] + label {
+    border-style: dashed;
+    border-color: var(--color-border);
+    color: var(--color-muted);
+  }
+
+  .value input:focus-visible + label {
+    outline: var(--focus-ring);
+    outline-offset: 2px;
+  }
+
+  .add {
+    display: flex;
+    gap: var(--space-3);
+  }
+
+  .quantity {
+    display: inline-flex;
+    align-items: center;
+    border: 1px solid var(--color-fg);
+    border-radius: var(--radius);
+  }
+
+  .quantity button {
+    width: 2.5rem;
+    height: 2.75rem;
+    border: 0;
+    background: none;
+    font: inherit;
+    font-size: 1.125rem;
+    cursor: pointer;
+  }
+
+  .quantity input {
+    width: 3.5rem;
+    height: 2.75rem;
+    border: 0;
+    background: none;
+    font: inherit;
+    text-align: center;
+    -moz-appearance: textfield;
+  }
+
+  .quantity input::-webkit-inner-spin-button,
+  .quantity input::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+  }
+
+  .add-button {
+    flex: 1;
+  }
+
+  .add-button:disabled {
+    background: var(--color-surface);
+    border-color: var(--color-border);
+    color: var(--color-muted);
+    cursor: default;
+  }
+
+  .sku {
+    margin: 0;
+    font-size: 0.875rem;
+    color: var(--color-muted);
+  }
+
+  [hidden] {
+    display: none;
+  }
+
+  .description {
+    padding-top: var(--space-4);
+    border-top: 1px solid var(--color-border);
+  }
+
+  .description h2 {
+    font-size: 1.125rem;
+    font-weight: 500;
+  }
+</style>

@@ -1,0 +1,74 @@
+---
+import type { PriceSummary } from '../lib/prices.js';
+import { priceText } from '../lib/prices.js';
+
+/**
+ * A price as wireframe 3a draws it: current price first, the regular price struck after it.
+ * Sighted users read the visual parts; screen readers get one sentence instead. Every part is
+ * always rendered (hidden when empty) so the product page script can update it in place.
+ */
+interface Props {
+  readonly summary: PriceSummary | null;
+  /** Product cards drop zero cents and the "Save" badge. */
+  readonly compact?: boolean;
+}
+
+const { summary, compact = false } = Astro.props;
+const { currency, locale } = Astro.locals;
+const unavailable = `Not available in ${currency}`;
+const text = summary ? priceText(summary, locale, compact) : { now: unavailable, was: null, saving: null, spoken: unavailable };
+---
+
+<p class:list={['price', { compact, unavailable: !summary }]} data-price>
+  <span aria-hidden="true" class="now" data-now>{text.now}</span>
+  <s aria-hidden="true" class="was" data-was hidden={!text.was}>{text.was}</s>
+  {
+    !compact && (
+      <span aria-hidden="true" class="saving" data-saving hidden={!text.saving}>
+        {text.saving}
+      </span>
+    )
+  }
+  <span class="visually-hidden" data-spoken>{text.spoken}</span>
+</p>
+
+<style>
+  .price {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: var(--space-2);
+    margin: 0;
+    font-size: 1.5rem;
+  }
+
+  .compact {
+    font-size: 1rem;
+  }
+
+  [hidden] {
+    display: none;
+  }
+
+  .was {
+    color: var(--color-muted);
+    font-size: 0.85em;
+  }
+
+  .now:has(+ .was:not([hidden])) {
+    font-weight: 600;
+    color: var(--color-sale);
+  }
+
+  .saving {
+    padding: 0 var(--space-2);
+    border: 1px solid var(--color-fg);
+    border-radius: 999px;
+    font-size: 0.875rem;
+  }
+
+  .unavailable {
+    color: var(--color-muted);
+    font-size: 1rem;
+  }
+</style>

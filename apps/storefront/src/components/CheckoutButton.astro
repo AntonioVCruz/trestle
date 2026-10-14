@@ -1,0 +1,39 @@
+---
+import { unavailableLines } from '../lib/cart.js';
+
+// Checkout, on the cart page and in the drawer. Lines that can't be bought block it (3b).
+const { cart } = Astro.locals;
+const blocked = cart !== null && unavailableLines(cart).length > 0;
+---
+
+{
+  blocked ? (
+    <>
+      <button type="button" class="button" disabled aria-describedby="checkout-blocked">
+        Checkout
+      </button>
+      <p class="blocked" id="checkout-blocked">
+        Remove unavailable items to check out
+      </p>
+    </>
+  ) : (
+    <a class="button" href="/checkout">
+      Checkout
+    </a>
+  )
+}
+
+<style>
+  .button:disabled {
+    background: var(--color-surface);
+    border-color: var(--color-border);
+    color: var(--color-muted);
+    cursor: default;
+  }
+
+  .blocked {
+    margin: 0;
+    font-size: 0.875rem;
+    text-align: center;
+  }
+</style>

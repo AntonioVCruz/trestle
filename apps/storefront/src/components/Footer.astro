@@ -1,0 +1,52 @@
+---
+import CurrencyPicker from './CurrencyPicker.astro';
+
+// Footer menus, legal pages, the newsletter and the language picker are planned (wireframe 1a).
+const { channel } = Astro.locals;
+---
+
+<footer class="footer">
+  <div class="container row">
+    <p>© {new Date().getFullYear()} {channel.name}</p>
+    <div class="end">
+      <CurrencyPicker id="currency-footer" />
+      <span class="powered">Powered by Trestle</span>
+    </div>
+  </div>
+</footer>
+
+<style>
+  .footer {
+    margin-top: var(--space-12);
+    border-top: 1px solid var(--color-fg);
+    background: var(--color-surface);
+    font-size: 0.875rem;
+  }
+
+  .row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-4);
+    padding-block: var(--space-6);
+  }
+
+  p {
+    margin: 0;
+  }
+
+  .end {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-4);
+  }
+
+  .powered {
+    padding: var(--space-1) var(--space-3);
+    border: 1px solid var(--color-fg);
+    border-radius: 999px;
+    font-size: 0.75rem;
+  }
+</style>

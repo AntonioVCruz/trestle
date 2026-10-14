@@ -1,0 +1,48 @@
+---
+import { cartErrorMessage, lineTitle } from '../lib/cart.js';
+
+/**
+ * What the last cart change did, from the query parameters the cart endpoints redirect with:
+ * `added`, `removed` or `error`. Success is a polite status, failure an alert.
+ */
+interface Props {
+  readonly params: URLSearchParams;
+}
+
+const { params } = Astro.props;
+const { cart } = Astro.locals;
+const added = cart?.lines.find((l) => l.id === params.get('added'));
+const error = params.get('error');
+---
+
+{
+  error ? (
+    <p class="message error" role="alert">
+      {cartErrorMessage(error)}
+    </p>
+  ) : added ? (
+    <p class="message" role="status">
+      ✓ {lineTitle(added)} added
+    </p>
+  ) : params.has('removed') ? (
+    <p class="message" role="status">
+      Item removed
+    </p>
+  ) : (
+    <p class="visually-hidden" role="status" />
+  )
+}
+
+<style>
+  .message {
+    margin: 0;
+    padding: var(--space-2) var(--space-4);
+    background: var(--color-surface);
+    font-size: 0.875rem;
+  }
+
+  .error {
+    color: var(--color-sale);
+    font-weight: 600;
+  }
+</style>

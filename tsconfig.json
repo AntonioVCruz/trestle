@@ -1,0 +1,10 @@
+{
+  "files": [],
+  "references": [
+    { "path": "packages/core" },
+    { "path": "packages/api-store" },
+    { "path": "packages/api-admin" },
+    { "path": "packages/sdk" },
+    { "path": "apps/server" }
+  ]
+}

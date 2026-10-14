@@ -1,0 +1,32 @@
+---
+import CartDrawer from '../components/CartDrawer.astro';
+import Footer from '../components/Footer.astro';
+import Header from '../components/Header.astro';
+import '../styles/global.css';
+
+interface Props {
+  readonly title?: string;
+}
+
+const { title } = Astro.props;
+const { channel, locale } = Astro.locals;
+---
+
+<!doctype html>
+<html lang={locale}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <title>{title ? `${title} · ${channel.name}` : channel.name}</title>
+  </head>
+  <body>
+    <a href="#content" class="skip-link">Skip to content</a>
+    <Header />
+    <main id="content" tabindex="-1">
+      <slot />
+    </main>
+    <Footer />
+    <CartDrawer />
+  </body>
+</html>

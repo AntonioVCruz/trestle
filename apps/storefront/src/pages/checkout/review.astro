@@ -1,0 +1,160 @@
+---
+import Checkout from '../../layouts/Checkout.astro';
+import { takePriceChanges } from '../../lib/cart-session.js';
+import { checkoutRedirect, placeOrder } from '../../lib/checkout-flow.js';
+import { addressLines, billsToShipping, checkoutErrorMessage } from '../../lib/checkout.js';
+import { formatMoney } from '../../lib/money.js';
+
+/**
+ * Step 4 (1u): everything at a glance, each part with Edit, then Place order. The order is
+ * placed by this page's POST: the storefront server retries with the same Idempotency-Key and
+ * then redirects to the confirmation, or to whichever screen handles the failure.
+ *
+ * After a re-pricing (3d) the API has dropped the payment, so the page explains what changed and
+ * offers "Choose payment again" instead of Place order.
+ */
+const { cart, locale } = Astro.locals;
+const repriced = Astro.url.searchParams.has('changed');
+// A re-priced cart is back at step 3, but this page explains why before sending it there.
+const away = checkoutRedirect(cart, repriced ? 'payment' : 'review');
+if (away) return Astro.redirect(away);
+
+if (Astro.request.method === 'POST') {
+  const form = await Astro.request.formData();
+  const key = form.get('idempotencyKey');
+  if (!cart!.paymentMethod) return Astro.redirect('/checkout/payment', 303);
+  if (typeof key !== 'string' || key === '') return Astro.redirect('/checkout/review', 303);
+  return Astro.redirect(await placeOrder(cart!, key, Astro.cookies, Astro.url), 303);
+}
+
+const changes = repriced ? takePriceChanges(Astro.cookies) : [];
+const needsPayment = !cart!.paymentMethod;
+const error = Astro.url.searchParams.get('error');
+const format = (amount: number) => formatMoney(amount, cart!.currency, locale);
+const shippingAddress = cart!.shippingAddress!;
+// One key per Place order tap: a double submit of this form reuses it, a new visit gets a new one.
+const idempotencyKey = crypto.randomUUID();
+---
+
+<Checkout title="Review" step="review" attention={needsPayment ? ['payment'] : []} changes={changes}>
+  {
+    repriced && (
+      <div class="banner" role="alert" tabindex="-1" data-focus-on-load>
+        <p class="title">Prices changed</p>
+        {changes.length > 0 ? (
+          <ul>
+            {changes.map((c) => (
+              <li>
+                {c.title} is now {format(c.unitAfter)} (was {format(c.unitBefore)})
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p>Your cart changed since you last saw it.</p>
+        )}
+        <p>Check the new total, then choose your payment again. You haven’t been charged.</p>
+      </div>
+    )
+  }
+  {
+    error && (
+      <div class="banner" role="alert" tabindex="-1" data-focus-on-load>
+        <p class="title">{checkoutErrorMessage(error).title}</p>
+        <p>{checkoutErrorMessage(error).body}</p>
+      </div>
+    )
+  }
+  <h1 class="step-heading">Step 4 of 4: Review your order</h1>
+
+  <dl class="recap review">
+    <div>
+      <dt>Contact</dt>
+      <dd>{cart!.email}</dd>
+      <a href="/checkout/address">Edit<span class="visually-hidden"> contact</span></a>
+    </div>
+    <div>
+      <dt>Shipping address</dt>
+      <dd>{addressLines(shippingAddress).map((line) => <span class="line">{line}</span>)}</dd>
+      <a href="/checkout/address">Edit<span class="visually-hidden"> shipping address</span></a>
+    </div>
+    <div>
+      <dt>Shipping method</dt>
+      <dd>{cart!.shippingMethod ? `${cart!.shippingMethod.name} · ${format(cart!.shippingMethod.amount)}` : 'Not selected'}</dd>
+      <a href="/checkout/shipping">Edit<span class="visually-hidden"> shipping method</span></a>
+    </div>
+    <div>
+      <dt>Payment</dt>
+      <dd>{cart!.paymentMethod?.name ?? 'Not selected'}</dd>
+      <a href="/checkout/payment">Edit<span class="visually-hidden"> payment</span></a>
+    </div>
+    <div>
+      <dt>Billing address</dt>
+      <dd>{billsToShipping(cart!) ? 'Same as shipping' : addressLines(cart!.billingAddress!).map((line) => <span class="line">{line}</span>)}</dd>
+      <a href="/checkout/address">Edit<span class="visually-hidden"> billing address</span></a>
+    </div>
+  </dl>
+
+  {
+    needsPayment ? (
+      <div class="step-actions">
+        <a class="button" href="/checkout/payment">
+          Choose payment again
+        </a>
+      </div>
+    ) : (
+      <form method="post" class="step-actions" data-place-order>
+        <input type="hidden" name="idempotencyKey" value={idempotencyKey} />
+        <button type="submit" class="button" data-place-button>
+          Place order · {format(cart!.total)}
+        </button>
+        <p class="placing" role="status" data-placing-status />
+      </form>
+    )
+  }
+</Checkout>
+
+<script>
+  // 1v: one tap only, with the wait announced. The form still submits normally; the server
+  // does the retrying.
+  const form = document.querySelector<HTMLFormElement>('[data-place-order]');
+  form?.addEventListener('submit', (event) => {
+    const button = form.querySelector<HTMLButtonElement>('[data-place-button]')!;
+    if (button.getAttribute('aria-disabled') === 'true') {
+      event.preventDefault();
+      return;
+    }
+    button.setAttribute('aria-disabled', 'true');
+    button.setAttribute('aria-busy', 'true');
+    button.textContent = 'Placing order…';
+    form.querySelector('[data-placing-status]')!.textContent = 'Placing your order… This can take a few seconds. Please don’t close or refresh this page.';
+    document.body.classList.add('placing-order');
+    document.querySelector('.checkout-header .back')?.setAttribute('aria-hidden', 'true');
+  });
+</script>
+
+<style>
+  .review > div {
+    grid-template-columns: 9rem 1fr auto;
+  }
+
+  .line {
+    display: block;
+  }
+
+  .placing:empty {
+    display: none;
+  }
+
+  .placing {
+    margin: 0;
+    text-align: center;
+  }
+
+  :global(.placing-order) main {
+    cursor: progress;
+  }
+
+  :global(.placing-order) .recap {
+    opacity: 0.4;
+  }
+</style>

@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics><meta name="design_doc_mode" content="canvas"><link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=Patrick+Hand&display=swap" rel="stylesheet"><style>
+body{margin:0;background:#f0eee9;font-family:system-ui,sans-serif}
+a{color:#1f1f1f}a:hover{color:#000}
+.dv-turn{padding:40px 44px 32px;border-bottom:1px solid rgba(0,0,0,.08);scroll-margin-top:16px}.dv-thd{display:flex;align-items:baseline;gap:10px;margin:0 0 20px}.dv-tid{font:600 10px ui-monospace,Menlo,monospace;padding:3px 7px;background:#1a1a1a;color:#fff;border-radius:4px;text-decoration:none}.dv-tname{font:600 13px/1.2 system-ui,sans-serif;color:#1a1a1a}.dv-opts{display:flex;flex-wrap:wrap;gap:28px;align-items:flex-start}.dv-opt{flex:none;display:flex;flex-direction:column;gap:9px;scroll-margin-top:16px}.dv-oid{font:600 10.5px ui-monospace,Menlo,monospace;padding:3px 7px;background:rgba(0,0,0,.08);color:#1a1a1a;border-radius:5px;text-decoration:none}.dv-olabel{display:flex;align-items:baseline;gap:8px;font:400 11px/1.3 system-ui,sans-serif;color:rgba(0,0,0,.55)}.dv-card{max-width:100%;background:#fff;border:1px solid rgba(0,0,0,.08);border-radius:8px;box-shadow:0 1px 3px rgba(0,0,0,.06);overflow:hidden}.dv-opt:target .dv-oid{background:#2a78d6;color:#fff}.dv-next{margin:22px 0 0;font:12px/1.5 system-ui,sans-serif;color:rgba(0,0,0,.5)}
+.dv-grp{margin:44px 0 16px;display:flex;align-items:baseline;gap:12px;border-top:1px solid rgba(0,0,0,.12);padding-top:18px}.dv-grp h2{margin:0;font:600 18px/1.2 system-ui,sans-serif;color:#1a1a1a}.dv-grp p{margin:0;font:13px/1.4 system-ui,sans-serif;color:rgba(0,0,0,.55);max-width:760px}
+.wf{font-family:'Patrick Hand',cursive;color:#1f1f1f;font-size:16px;line-height:1.3}.wf *{box-sizing:border-box}
+.row{display:flex;align-items:center;gap:8px}.col{display:flex;flex-direction:column;gap:8px}.sp{flex:1;min-width:0}
+.img{position:relative;background:repeating-linear-gradient(135deg,#f4f4f4 0 8px,#e8e8e8 8px 16px);border:1.5px solid #bbb;border-radius:4px;display:flex;align-items:center;justify-content:center;font:11px/1.3 ui-monospace,Menlo,monospace;color:#777;text-align:center;padding:4px}
+.bx{border:1.5px solid #333;border-radius:6px}
+.btn{min-height:48px;padding:0 18px;display:flex;align-items:center;justify-content:center;background:#222;color:#fff;border:2px solid #222;border-radius:6px;font-size:17px;white-space:nowrap}
+.btn2{min-height:48px;padding:0 18px;display:flex;align-items:center;justify-content:center;background:#fff;color:#222;border:2px solid #222;border-radius:6px;font-size:17px;white-space:nowrap}
+.btn.dis{background:#bbb;border-color:#bbb}
+.ic{min-width:44px;height:44px;padding:0 8px;border:1.5px solid #333;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:16px;flex:none}
+.ln{height:8px;background:#d6d6d6;border-radius:4px}.sk{background:#e6e6e6;border-radius:4px}
+.chip{min-width:48px;height:44px;padding:0 12px;border:1.5px solid #333;border-radius:6px;display:flex;align-items:center;justify-content:center;background:#fff}
+.chip.on{background:#222;color:#fff}.chip.off{border-style:dashed;color:#aaa;border-color:#bbb;text-decoration:line-through}.chip.nx{border-style:dashed;color:#bbb;border-color:#ccc}
+.badge{font-size:12px;padding:1px 8px;border:1.5px solid #333;border-radius:20px;background:#fff;white-space:nowrap}
+.lbl{font-size:14px;color:#555}.h1{font-size:28px;line-height:1.1}.h2{font-size:21px}.h3{font-size:18px}
+.fld{min-height:48px;border:1.5px solid #333;border-radius:6px;padding:0 12px;display:flex;align-items:center;color:#999;background:#fff}
+.fld.err{border:2.5px solid #222}
+.hr{height:1.5px;background:#ccc}
+.rad{width:22px;height:22px;border-radius:50%;border:2px solid #333;flex:none;display:flex;align-items:center;justify-content:center}.rad.on::after{content:"";width:10px;height:10px;border-radius:50%;background:#222}
+.cbx{width:22px;height:22px;border:2px solid #333;border-radius:4px;flex:none;display:flex;align-items:center;justify-content:center;font-size:14px}
+.dot{width:24px;height:24px;border-radius:50%;border:1.5px solid #333;display:inline-flex;align-items:center;justify-content:center;font-size:13px;flex:none;background:#fff}.dot.cur{background:#222;color:#fff}.dot.done{background:#ddd}
+.stub{padding:14px 16px;background:#f2f2f2;border-top:1.5px solid #333;font:11px ui-monospace,Menlo,monospace;color:#888;text-align:center}
+.an{display:block;width:fit-content;max-width:100%;margin:6px 0;font-family:'Caveat',cursive;font-weight:500;color:#2a63c9;font-size:17px;line-height:1.1;border:1.5px dashed #2a63c9;border-radius:6px;padding:3px 8px;background:#f2f6fd}
+.an b{font:600 10px/1 ui-monospace,Menlo,monospace;background:#2a63c9;color:#fff;padding:2px 5px;border-radius:3px;margin-right:5px;vertical-align:2px;text-transform:uppercase;letter-spacing:.04em}
+.fo{width:20px;height:20px;border-radius:50%;background:#2a63c9;color:#fff;font:600 10px ui-monospace,Menlo,monospace;display:inline-flex;align-items:center;justify-content:center;flex:none}
+.focus{outline:3px solid #2a63c9;outline-offset:3px}
+.hide-an .an,.hide-an .fo{display:none!important}.hide-an .focus{outline:none}
+.single-ch .ch-only{display:none!important}
+.pl{position:relative;outline:2px dashed #b8560f;outline-offset:1px}.pl::after{content:"planned";position:absolute;top:-9px;right:4px;font:600 9px/1 ui-monospace,Menlo,monospace;background:#b8560f;color:#fff;padding:2px 5px;border-radius:3px;text-transform:uppercase;letter-spacing:.04em;z-index:5;pointer-events:none;white-space:nowrap}.pl[data-pl]::after{content:"planned · " attr(data-pl)}.hide-an .pl{outline:none}.hide-an .pl::after{display:none}.hide-pl .pl{display:none!important}
+</style></helmet>
+<section class="dv-turn" id="t3">
+<div class="dv-thd"><a class="dv-tid" href="#t3">3</a><span class="dv-tname">API error &amp; edge states · planned markers added to turn 1 (dashed orange)</span></div>
+<div class="dv-opts">
+<div class="dv-opt" id="3a"><div class="dv-olabel"><a class="dv-oid" href="#3a">3a</a>Sale "was" price — card, product, cart, order</div><div class="dv-card wf" style="width:440px">
+<div class="col" style="padding:20px;gap:16px">
+<div class="h2">Sale price</div>
+<div class="row" style="gap:14px;align-items:flex-start"><div class="col" style="width:120px;gap:3px;flex:none"><div class="img" style="aspect-ratio:4/5">product image</div><div>Linen Tee</div><div class="row" style="gap:6px"><b>$22</b><s class="lbl">$28</s></div></div><div class="col" style="gap:2px"><b>Product card</b><span class="lbl">Current price first, original struck after. With "From" pricing: "From $22, was $28".</span></div></div>
+<div class="hr"></div>
+<div class="col" style="gap:4px"><b>Product page</b><div class="row" style="gap:10px;align-items:baseline"><span class="h2">$22.00</span><s class="lbl" style="font-size:17px">$28.00</s><span class="badge">Save $6</span></div><span class="lbl">Follows the resolved variant; gone if that variant isn't discounted.</span></div>
+<div class="hr"></div>
+<div class="col" style="gap:4px"><b>Cart line &amp; order line</b><div class="row" style="gap:12px"><div class="img" style="width:52px;height:64px"></div><span class="col sp" style="gap:0"><span>Linen Tee — M / Red</span><span class="lbl">Qty 2 · $22.00 each</span></span><span class="col" style="gap:0;align-items:flex-end"><b>$44.00</b><s class="lbl">$56.00</s></span></div></div>
+<span class="an"><b>catalog</b> variant price + originalUnitPrice <b>cart</b> <b>order</b> lines carry the original values. Strike only when original &gt; current</span>
+<span class="an">Screen readers get visually-hidden "Sale price $22.00, was $28.00": &lt;s&gt; alone isn't announced</span>
+</div></div></div>
+<div class="dv-opt" id="3b"><div class="dv-olabel"><a class="dv-oid" href="#3b">3b</a>Cart — line no longer available</div><div class="dv-card wf" style="width:375px">
+<div class="row" style="padding:8px 12px;border-bottom:1.5px solid #333;gap:6px"><div class="ic">☰</div><div class="sp" style="font-size:21px;padding-left:4px">STORE NAME</div><div class="ic pl">⌕</div><div class="ic">Cart · 2</div></div>
+<div class="col" style="padding:16px;gap:16px"><div class="h1">Cart</div>
+<div class="col focus" style="border:2.5px solid #222;border-radius:6px;padding:14px;gap:4px;background:#f2f2f2"><b>⚠ 1 item is no longer available</b><span style="font-size:15px">Remove it to continue to checkout.</span></div>
+<div class="row" style="gap:12px;align-items:flex-start"><div class="img" style="width:76px;height:92px"></div><div class="col sp" style="gap:4px"><div>Linen Tee — M / Red</div><div class="lbl">$28.00 each</div><div class="row" style="gap:12px"><div class="row bx" style="gap:0"><div class="ic" style="border:0">−</div><div style="width:28px;text-align:center">2</div><div class="ic" style="border:0">+</div></div><span class="sp"></span><b>$56.00</b></div></div></div>
+<div class="hr"></div>
+<div class="row" style="gap:12px;align-items:flex-start"><div class="img" style="width:76px;height:92px;opacity:.4"></div><div class="col sp" style="gap:6px"><div style="color:#888">Wool Beanie — Grey</div><b style="font-size:15px">No longer available</b><div class="btn2" style="align-self:flex-start">Remove</div></div></div>
+<span class="an"><b>cart</b> line.available = false → no stepper or price, only Remove (DELETE /carts/{id}/lines/{lineId})</span>
+<div class="row h3"><span class="sp">Subtotal</span><span>$56.00</span></div>
+<div class="btn dis">Checkout</div><span class="lbl" style="text-align:center">Remove unavailable items to check out</span>
+<span class="an">Checkout blocked: API answers cart_not_ready until the line is gone. Same treatment in the drawer (<a class="dv-oid" href="#1m">1m</a>)</span>
+</div></div></div>
+<div class="dv-opt" id="3c"><div class="dv-olabel"><a class="dv-oid" href="#3c">3c</a>Payment requires action</div><div class="dv-card wf" style="width:375px">
+<div class="row" style="padding:8px 12px;border-bottom:1.5px solid #333"><div class="ic">‹ Cart</div><div class="sp" style="text-align:center;font-size:21px">STORE NAME</div><span class="lbl" style="width:62px;text-align:right">Secure</span></div>
+<div style="position:relative;height:660px;overflow:hidden">
+<div class="col" style="padding:16px;gap:12px;opacity:.35"><div class="sk" style="height:28px;width:70%"></div><div class="sk" style="height:60px"></div><div class="sk" style="height:60px"></div><div class="sk" style="height:60px"></div><div class="sk" style="height:140px"></div></div>
+<div style="position:absolute;inset:0;background:rgba(0,0,0,.4)"></div>
+<div class="col" style="position:absolute;left:0;right:0;bottom:0;background:#fff;border-top:2px solid #222;border-radius:12px 12px 0 0;padding:16px;gap:12px">
+<div class="row"><div class="h2 sp">Confirm your payment</div><div class="ic focus">✕</div></div>
+<span class="lbl">Your bank needs you to confirm this $113.43 payment.</span>
+<div class="img" style="height:230px">payment provider's confirmation step (hosted)</div>
+<span class="an">POST /carts/{id}/complete → 409 payment_requires_action → run the provider's next action with its client data, then call complete again</span>
+<span class="an">✕ or failed check → step 3 with error banner, cart intact (as <a class="dv-oid" href="#1w">1w</a>)</span>
+</div></div></div></div>
+<div class="dv-opt" id="3d"><div class="dv-olabel"><a class="dv-oid" href="#3d">3d</a>Prices changed at review</div><div class="dv-card wf" style="width:375px">
+<div class="row" style="padding:8px 12px;border-bottom:1.5px solid #333"><div class="ic">‹ Cart</div><div class="sp" style="text-align:center;font-size:21px">STORE NAME</div><span class="lbl" style="width:62px;text-align:right">Secure</span></div>
+<nav class="row" style="padding:12px 16px;gap:5px;font-size:13px;border-bottom:1.5px solid #ddd"><span class="dot done">✓</span><u>Address</u><span class="sp hr"></span><span class="dot done">✓</span><u>Shipping</u><span class="sp hr"></span><span class="dot">!</span><u>Payment</u><span class="sp hr"></span><span class="dot cur">4</span><b>Review</b></nav>
+<div class="col" style="padding:16px;gap:14px">
+<div class="col focus" style="border:2.5px solid #222;border-radius:6px;padding:14px;gap:4px;background:#f2f2f2"><b>⚠ Prices changed</b><span style="font-size:15px">Linen Tee is now $30.00 (was $28.00). Check the new total, then choose your payment again. You haven't been charged.</span></div>
+<div class="h2">Step 4 of 4: Review</div>
+<div class="row" style="gap:12px"><div class="img" style="width:52px;height:64px"></div><span class="col sp" style="gap:2px"><span>Linen Tee — M / Red</span><span class="row lbl" style="gap:6px">Qty 2<span class="badge">Changed</span></span></span><span class="col" style="gap:0;align-items:flex-end"><b>$60.00</b><span class="lbl">previously $56.00</span></span></div>
+<div class="row" style="gap:12px"><div class="img" style="width:52px;height:64px"></div><span class="col sp" style="gap:0"><span>Gift Card — $50</span><span class="lbl">Qty 1</span></span><span>$50.00</span></div>
+<div class="hr"></div>
+<div class="row"><span class="sp">Subtotal</span><span>$110.00</span></div><div class="row"><span class="sp">Shipping</span><span>$5.00</span></div><div class="row h3"><span class="sp">Total</span><span>$115.00 USD</span></div>
+<div class="row bx" style="padding:10px 14px;min-height:56px;border-style:dashed"><span class="col sp" style="gap:0"><span class="lbl">Payment</span><span>Not selected</span></span></div>
+<div class="btn">Choose payment again</div>
+<span class="an">409 cart_changed → API re-priced the cart and dropped the payment method. The API doesn't say what changed: the storefront compares the cart it had with GET /carts/{id}. Old prices read "previously", never struck (strikethrough means a sale, <a class="dv-oid" href="#3a">3a</a>). Place order is replaced until step 3 is done again</span>
+</div></div></div>
+<div class="dv-opt" id="3e"><div class="dv-olabel"><a class="dv-oid" href="#3e">3e</a>Order already being placed</div><div class="dv-card wf" style="width:375px">
+<div class="row" style="padding:8px 12px;border-bottom:1.5px solid #333"><div class="ic" style="color:#bbb;border-color:#ccc">‹ Cart</div><div class="sp" style="text-align:center;font-size:21px">STORE NAME</div><span class="lbl" style="width:62px;text-align:right">Secure</span></div>
+<div class="col" style="padding:56px 24px 32px;gap:12px;align-items:center;text-align:center"><div style="width:56px;height:56px;border-radius:50%;border:5px solid #ddd;border-top-color:#222"></div>
+<div class="h2">Your order is already being placed</div><div class="lbl">It was started from another tap or tab. Stay on this page and we'll show your confirmation as soon as it's done.</div></div>
+<div class="col" style="padding:0 16px 20px;gap:8px"><div class="btn dis">Placing order…</div>
+<span class="an">409 completion_in_progress → the first attempt is still running; it can't return the order yet. Retry with backoff (~every 2 s, same Idempotency-Key) or poll GET /carts/{id} until the cart's checkoutState is placed and orderId is set → <a class="dv-oid" href="#1x">1x</a>. Stop on any other error. After ~1 min, switch to "We're confirming your order" and keep polling (ADR 0018)</span></div>
+</div></div>
+<div class="dv-opt" id="3f"><div class="dv-olabel"><a class="dv-oid" href="#3f">3f</a>No shipping options for address</div><div class="dv-card wf" style="width:375px">
+<div class="row" style="padding:8px 12px;border-bottom:1.5px solid #333"><div class="ic">‹ Cart</div><div class="sp" style="text-align:center;font-size:21px">STORE NAME</div><span class="lbl" style="width:62px;text-align:right">Secure</span></div>
+<nav class="row" style="padding:12px 16px;gap:5px;font-size:13px;border-bottom:1.5px solid #ddd"><span class="dot done">✓</span><u>Address</u><span class="sp hr"></span><span class="dot cur">2</span><b>Shipping</b><span class="sp hr"></span><span class="dot">3</span>Payment<span class="sp hr"></span><span class="dot">4</span>Review</nav>
+<div class="col" style="padding:16px;gap:14px">
+<div class="col bx" style="padding:4px 14px;gap:0;font-size:15px"><div class="row" style="min-height:44px;border-bottom:1px solid #ddd"><span class="lbl" style="width:64px">Contact</span><span class="sp">jo@example.com</span><u>Change</u></div><div class="row" style="min-height:44px"><span class="lbl" style="width:64px">Ship to</span><span class="sp">12 Main St, Oakland CA</span><u>Change</u></div></div>
+<div class="h2">Step 2 of 4: Shipping method</div>
+<div class="col" style="padding:24px 16px;gap:10px;align-items:center;text-align:center;border:1.5px dashed #999;border-radius:8px"><div class="h3">We can't deliver to this address</div><div class="lbl">There are no shipping options for Oakland, CA 94612, US. Check the address or try a different one.</div><div class="btn" style="align-self:stretch">Edit address</div></div>
+<div class="btn dis">Continue to payment</div>
+<span class="an"><b>checkout</b> GET /carts/{id}/shipping-options returns [] → can't continue. Message announced in a live region</span>
+</div></div></div>
+<div class="dv-opt" id="3g"><div class="dv-olabel"><a class="dv-oid" href="#3g">3g</a>No payment methods in the channel</div><div class="dv-card wf" style="width:375px">
+<div class="row" style="padding:8px 12px;border-bottom:1.5px solid #333"><div class="ic">‹ Cart</div><div class="sp" style="text-align:center;font-size:21px">STORE NAME</div><span class="lbl" style="width:62px;text-align:right">Secure</span></div>
+<nav class="row" style="padding:12px 16px;gap:5px;font-size:13px;border-bottom:1.5px solid #ddd"><span class="dot done">✓</span><u>Address</u><span class="sp hr"></span><span class="dot done">✓</span><u>Shipping</u><span class="sp hr"></span><span class="dot cur">3</span><b>Payment</b><span class="sp hr"></span><span class="dot">4</span>Review</nav>
+<div class="col" style="padding:16px;gap:14px">
+<div class="h2">Step 3 of 4: Payment</div>
+<div class="col" style="padding:24px 16px;gap:10px;align-items:center;text-align:center;border:1.5px dashed #999;border-radius:8px"><div class="h3">Payment isn't available right now</div><div class="lbl">This shop can't take payments at the moment. Your cart and details are saved, so you can come back and finish later.</div><div class="btn2" style="align-self:stretch">Back to cart</div></div>
+<div class="btn dis">Review order</div>
+<span class="an"><b>checkout</b> GET /carts/{id}/payment-methods returns [] (none enabled for the channel) → nothing to choose, can't continue. Message in a live region; storefront logs it for the merchant</span>
+</div></div></div>
+</div>
+<p class="dv-next">Try next: "hide planned features (Tweaks → showPlanned off) and check the shop still works" · "show <a class="dv-oid" href="#3d">3d</a> on desktop" · "export every screen as PNG for the repo"</p>
+</section>
+<section class="dv-turn" id="t2">
+<div class="dv-thd"><a class="dv-tid" href="#t2">2</a><span class="dv-tname">API &amp; ADR review fixes — currency picker rule (labels in turn 1 corrected in place)</span></div>
+<div class="dv-opts">
+<div class="dv-opt" id="2a"><div class="dv-olabel"><a class="dv-oid" href="#2a">2a</a>Mobile menu — cart has items, currency locked</div><div class="dv-card wf" style="width:375px">
+<div class="row" style="padding:8px 12px;border-bottom:1.5px solid #333"><div class="sp" style="font-size:21px;padding-left:4px">Menu</div><div class="ic">✕</div></div>
+<div class="col" style="padding:8px 16px 4px;gap:0">
+<div class="row" style="min-height:52px;border-bottom:1.5px solid #ccc"><span class="sp h3">Women</span>▾</div>
+<div class="row" style="min-height:52px;border-bottom:1.5px solid #ccc"><span class="sp h3">Men</span>▾</div>
+<div class="row" style="min-height:52px;border-bottom:1.5px solid #ccc"><span class="sp h3">Accessories</span>▾</div>
+<div class="row" style="min-height:52px;border-bottom:1.5px solid #ccc"><span class="sp h3">Gift cards</span>›</div></div>
+<div class="col" style="padding:16px;gap:12px">
+<div class="col pl" data-pl="language picker" style="gap:2px"><span class="lbl">Language</span><div class="fld" style="color:#222">English ▾</div></div>
+<div class="col" style="gap:4px"><span class="lbl">Currency</span><div class="fld" style="border-style:dashed;border-color:#999;color:#888;background:#f4f4f4">USD $ · locked</div>
+<span style="font-size:15px">Your cart is in USD. To shop in another currency, empty your cart first. <u>View cart</u></span></div>
+<span class="an"><b>cart</b> currency fixed at cart creation. Picker aria-disabled + helper text linked via aria-describedby</span></div>
+</div></div>
+<div class="dv-opt" id="2b"><div class="dv-olabel"><a class="dv-oid" href="#2b">2b</a>Spec — currency picker rule</div><div class="dv-card wf" style="width:440px">
+<div class="col" style="padding:20px;gap:14px">
+<div class="h2">Currency picker</div>
+<div class="row" style="gap:14px;align-items:flex-start"><div class="fld" style="width:110px;color:#222;flex:none">USD $ ▾</div><div class="col" style="gap:0"><b>No cart, or cart empty</b><span class="lbl">Enabled. The choice is remembered; the next Add to cart creates the cart with POST /carts { currency }, then adds the line with POST /carts/{id}/lines.</span></div></div>
+<div class="row" style="gap:14px;align-items:flex-start"><div class="fld" style="width:110px;flex:none;border-style:dashed;border-color:#999;color:#888;background:#f4f4f4">USD · locked</div><div class="col" style="gap:0"><b>Cart has items</b><span class="lbl">Disabled, with the reason shown and a link to the cart. Emptying the cart unlocks it.</span></div></div>
+<div class="hr"></div>
+<span class="lbl">Why not start a new cart on switch: it silently throws away the shopper's items. Disabling keeps the cart safe and makes the rule visible.</span>
+<span class="lbl">Prices on catalog pages follow the cart's currency while it's locked. Language stays free to change.</span>
+<span class="an"><b>channel</b> currencies (picker only if &gt;1) <b>cart</b> currency</span>
+</div></div></div>
+</div>
+<p class="dv-next">Try next: "show the 'start a new cart' alternative to <a class="dv-oid" href="#2a">2a</a> as a confirm dialog"</p>
+</section>
+<section class="dv-turn" id="t1">
+<div class="dv-thd"><a class="dv-tid" href="#t1">1</a><span class="dv-tname">Reference storefront — full flow, mobile-first (375) + desktop (1280)</span></div>
+<div class="wf row" style="flex-wrap:wrap;gap:10px 18px;font-size:15px;margin-bottom:4px">
+<span class="an" style="margin:0"><b>channel</b><b>catalog</b><b>cart</b><b>checkout</b><b>order</b> = Store API source for each block</span>
+<span class="row" style="gap:6px"><span class="chip on" style="height:28px;min-width:28px">M</span>selected</span>
+<span class="row" style="gap:6px"><span class="chip" style="height:28px;min-width:28px">L</span>available</span>
+<span class="row" style="gap:6px"><span class="chip off" style="height:28px;min-width:28px">XL</span>out of stock</span>
+<span class="row" style="gap:6px"><span class="chip nx" style="height:28px;min-width:28px">S</span>combination doesn't exist</span>
+<span class="row" style="gap:6px"><span class="fo">1</span>focus order</span><span class="row" style="gap:6px"><span class="pl" style="padding:2px 8px;margin-top:6px">thing</span>not in the Store API yet (Tweaks → showPlanned hides them)</span>
+<span class="ch-only lbl" style="font-family:system-ui;font-size:12px">Language/currency pickers show only when the channel has &gt;1 — toggle "multiChannel" in Tweaks.</span>
+</div>
+
+<div class="dv-grp"><h2>Home &amp; global layout</h2><p>Header, category menu, footer and the home page. Hero and promo strip are channel content; everything product-shaped is catalog.</p></div>
+<div class="dv-opts">
+
+<div class="dv-opt" id="1a"><div class="dv-olabel"><a class="dv-oid" href="#1a">1a</a>Home — mobile</div><div class="dv-card wf" style="width:375px">
+<div class="row" style="padding:8px 12px;border-bottom:1.5px solid #333;gap:6px"><div class="ic">☰</div><div class="sp" style="font-size:21px;padding-left:4px">STORE NAME</div><div class="ic pl">⌕</div><div class="ic">Cart · 2</div></div>
+<div style="padding:0 16px"><span class="an"><b>channel</b> name, logo <b>catalog</b> GET /categories → nav tree <b>cart</b> line count</span></div>
+<div class="pl" data-pl="hero (channel content)"><div class="img" style="height:220px;border-radius:0;border-left:0;border-right:0">hero banner image</div>
+<div class="col" style="padding:16px;gap:10px"><div class="h1">Seasonal headline goes here</div><div class="ln" style="width:85%"></div><div class="ln" style="width:60%"></div><div class="btn" style="margin-top:6px">Shop new arrivals</div><span class="an"><b>channel</b> hero content set by merchant</span></div></div>
+<div class="col pl" data-pl="category images, featured" style="padding:8px 0 16px"><div class="row" style="padding:0 16px"><div class="h2 sp">Shop by category</div></div>
+<div class="row" style="padding:0 16px;gap:12px;overflow:hidden;align-items:flex-start">
+<sc-for list="{{ cats }}" as="c" hint-placeholder-count="4"><div class="col" style="width:130px;flex:none;gap:4px"><div class="img" style="height:130px">category image</div><div>{{ c.name }}</div></div></sc-for></div>
+<div style="padding:0 16px"><span class="an"><b>catalog</b> GET /categories → top level (no parentId) · horizontal scroll</span></div></div>
+<div class="col" style="padding:8px 16px 16px;gap:12px"><div class="row"><div class="h2 sp">New arrivals</div><u>View all</u></div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px 12px"><sc-for list="{{ newArrivals }}" as="item" hint-placeholder-count="4"><div class="col" style="gap:3px"><div class="img" style="aspect-ratio:4/5">product image<sc-if value="{{ item.hasBadge }}"><span class="badge pl" style="position:absolute;top:6px;left:6px">{{ item.badge }}</span></sc-if></div><div>{{ item.name }}</div><div class="lbl" style="color:#1f1f1f">{{ item.price }}</div></div></sc-for></div>
+<span class="an"><b>catalog</b> GET /products?limit=4 (newest first)</span></div>
+<div class="col pl" data-pl="promo strip" style="background:#e4e4e4;padding:16px;gap:4px;text-align:center"><div class="h3">Free shipping over $75</div><div class="lbl">Use code WELCOME10 · <u>Details</u></div></div>
+<div style="padding:0 16px"><span class="an"><b>channel</b> promo strip</span></div>
+<footer class="col" style="background:#f2f2f2;border-top:1.5px solid #333;padding:20px 16px;gap:10px;margin-top:10px">
+<div class="col pl" data-pl="newsletter" style="gap:10px"><div class="h3">Get the newsletter</div><div class="lbl">Email address</div>
+<div class="row"><div class="fld sp">you@example.com</div><div class="btn">Sign up</div></div></div>
+<div class="col pl" data-pl="footer menus" style="gap:0;margin-top:6px"><div class="row" style="min-height:48px;border-bottom:1.5px solid #ccc"><span class="sp">Shop</span>+</div><div class="row" style="min-height:48px;border-bottom:1.5px solid #ccc"><span class="sp">Help</span>+</div><div class="row" style="min-height:48px;border-bottom:1.5px solid #ccc"><span class="sp">Legal</span>+</div></div>
+<div class="ch-only row" style="gap:10px"><div class="col sp pl" style="gap:2px"><span class="lbl">Language</span><div class="fld" style="color:#222">English ▾</div></div><div class="col sp" style="gap:2px"><span class="lbl">Currency</span><div class="fld" style="color:#222">USD $ ▾</div></div></div>
+<div class="row lbl" style="margin-top:6px">© Store Name<span class="sp"></span><span class="badge">Powered by Trestle</span></div>
+<span class="an"><b>channel</b> footer menus, legal pages, locales</span>
+</footer>
+</div></div>
+
+<div class="dv-opt" id="1b"><div class="dv-olabel"><a class="dv-oid" href="#1b">1b</a>Mobile menu — parent → child</div><div class="dv-card wf" style="width:375px">
+<div class="row" style="padding:8px 12px;border-bottom:1.5px solid #333"><div class="sp" style="font-size:21px;padding-left:4px">Menu</div><div class="ic focus">✕</div></div>
+<div class="col" style="padding:8px 16px 4px;gap:0">
+<div class="fld pl" data-pl="search" style="margin:8px 0 12px">⌕ Search products…</div>
+<div class="row" style="min-height:52px;border-bottom:1.5px solid #ccc"><span class="sp h3">Women</span>▴</div>
+<div class="col" style="gap:0;padding-left:16px;background:#f6f6f6">
+<div class="row" style="min-height:48px;border-bottom:1px solid #ddd"><u>Shop all Women</u></div>
+<div class="row" style="min-height:48px;border-bottom:1px solid #ddd">Tops</div>
+<div class="row" style="min-height:48px;border-bottom:1px solid #ddd">Bottoms</div>
+<div class="row" style="min-height:48px;border-bottom:1px solid #ddd">Outerwear</div></div>
+<div class="row" style="min-height:52px;border-bottom:1.5px solid #ccc"><span class="sp h3">Men</span>▾</div>
+<div class="row" style="min-height:52px;border-bottom:1.5px solid #ccc"><span class="sp h3">Accessories</span>▾</div>
+<div class="row" style="min-height:52px;border-bottom:1.5px solid #ccc"><span class="sp h3">Gift cards</span>›</div>
+<span class="an"><b>catalog</b> GET /categories → tree by parentId (2 levels). Parent = disclosure button (aria-expanded); child = link</span>
+</div>
+<div class="ch-only col" style="padding:12px 16px;gap:10px"><div class="col pl" data-pl="language picker" style="gap:2px"><span class="lbl">Language</span><div class="fld" style="color:#222">English ▾</div></div><div class="col" style="gap:2px"><span class="lbl">Currency</span><div class="fld" style="color:#222">USD $ ▾</div></div>
+<span class="an"><b>channel</b> languages, currencies — hidden if only one. Currency locks once the cart has items → <a class="dv-oid" href="#2a">2a</a></span></div>
+<div style="padding:8px 16px 20px"><span class="an">Focus trapped in drawer; Esc / ✕ closes and returns focus to ☰</span></div>
+</div></div>
+
+<div class="dv-opt" id="1c"><div class="dv-olabel"><a class="dv-oid" href="#1c">1c</a>Home — desktop, category menu open</div><div class="dv-card wf" style="width:1280px">
+<div class="ch-only row" style="height:36px;padding:0 40px;background:#eee;font-size:14px;gap:20px"><span class="sp"></span><span class="pl">Language: <u>English ▾</u></span><span>Currency: <u>USD $ ▾</u></span></div>
+<div class="row" style="height:72px;padding:0 40px;border-bottom:1.5px solid #333;gap:32px"><div style="font-size:24px">STORE NAME</div>
+<nav class="row" style="gap:26px;font-size:17px"><span style="border-bottom:2.5px solid #222;padding:4px 0">Women ▴</span><span>Men ▾</span><span>Accessories ▾</span><span>Gift cards</span></nav><span class="sp"></span><div class="fld pl" data-pl="search" style="width:300px">⌕ Search products…</div><div class="ic" style="padding:0 14px">Cart · 2</div></div>
+<div style="position:relative">
+<div class="row" style="position:absolute;left:0;right:0;top:0;z-index:2;background:#fff;border-bottom:1.5px solid #333;padding:24px 40px;gap:48px;align-items:flex-start;box-shadow:0 8px 16px rgba(0,0,0,.08)">
+<div class="col" style="gap:10px"><b class="lbl">Women</b><u>Shop all Women</u><span>Tops</span><span>Bottoms</span><span>Outerwear</span></div>
+<div class="col pl" style="gap:10px"><b class="lbl">Featured</b><span>New arrivals</span><span>Bestsellers</span></div>
+<span class="sp"></span><div class="img pl" style="width:260px;height:150px">menu feature image</div>
+<span class="an" style="align-self:flex-end"><b>catalog</b> children by parentId · opens on click / Enter, not hover-only</span></div>
+<div class="img" style="height:440px;border-radius:0;border:0;border-bottom:1.5px solid #bbb">hero banner image (wide)</div>
+<div class="col pl" data-pl="hero (channel content)" style="position:absolute;left:80px;bottom:56px;width:460px;background:#fff;padding:28px;gap:12px;border:1.5px solid #333;border-radius:6px"><div class="h1" style="font-size:36px">Seasonal headline goes here</div><div class="ln" style="width:90%"></div><div class="ln" style="width:70%"></div><div class="row" style="gap:12px;margin-top:6px"><div class="btn">Shop new arrivals</div><div class="btn2">Gift cards</div></div></div>
+</div>
+<div style="padding:0 40px"><span class="an"><b>channel</b> hero content</span></div>
+<div class="col pl" data-pl="category images, featured" style="padding:24px 40px;gap:14px"><div class="h2">Shop by category</div>
+<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:24px"><sc-for list="{{ cats }}" as="c" hint-placeholder-count="4"><div class="col" style="gap:6px"><div class="img" style="height:220px">category image</div><div class="h3">{{ c.name }}</div></div></sc-for></div>
+<span class="an"><b>catalog</b> GET /categories → top level (no parentId)</span></div>
+<div class="col" style="padding:24px 40px;gap:14px"><div class="row"><div class="h2 sp">New arrivals</div><u>View all</u></div>
+<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:24px"><sc-for list="{{ newArrivals }}" as="item" hint-placeholder-count="4"><div class="col" style="gap:4px"><div class="img" style="aspect-ratio:4/5">product image<sc-if value="{{ item.hasBadge }}"><span class="badge pl" style="position:absolute;top:8px;left:8px">{{ item.badge }}</span></sc-if></div><div class="h3">{{ item.name }}</div><div>{{ item.price }}</div></div></sc-for></div>
+<span class="an"><b>catalog</b> GET /products?limit=4 (newest first)</span></div>
+<div class="row pl" data-pl="promo strip" style="background:#e4e4e4;padding:20px 40px;gap:24px;margin-top:16px"><div class="h3">Free shipping over $75</div><span class="lbl">Use code WELCOME10</span><span class="sp"></span><u>Details</u><span class="an" style="margin:0"><b>channel</b> promo strip</span></div>
+<footer style="background:#f2f2f2;border-top:1.5px solid #333;padding:32px 40px 20px">
+<div style="display:grid;grid-template-columns:1fr 1fr 1fr 1.6fr;gap:32px">
+<div class="col pl" data-pl="footer menus"><b>Shop</b><span>Women</span><span>Men</span><span>Accessories</span><span>Gift cards</span></div>
+<div class="col pl"><b>Help</b><span>Contact</span><span>Shipping</span><span>Returns</span></div>
+<div class="col pl"><b>Legal</b><span>Terms</span><span>Privacy</span><span>Cookies</span></div>
+<div class="col pl" data-pl="newsletter"><b>Get the newsletter</b><span class="lbl">Email address</span><div class="row"><div class="fld sp">you@example.com</div><div class="btn">Sign up</div></div></div></div>
+<div class="row lbl" style="margin-top:24px;padding-top:14px;border-top:1.5px solid #ccc;gap:20px">© Store Name<span class="sp"></span><span class="ch-only pl">English ▾</span><span class="ch-only">USD $ ▾</span><span class="badge">Powered by Trestle</span></div>
+<span class="an"><b>channel</b> footer menus, legal pages, locales</span></footer>
+</div></div>
+</div>
+
+<div class="dv-grp"><h2>Category / product listing</h2><p>Newest first, cursor-paged: "Load more" appends the next page and disappears when nextCursor is null. "From" price when variant prices differ.</p></div>
+<div class="dv-opts">
+
+<div class="dv-opt" id="1d"><div class="dv-olabel"><a class="dv-oid" href="#1d">1d</a>Category — mobile</div><div class="dv-card wf" style="width:375px">
+<div class="row" style="padding:8px 12px;border-bottom:1.5px solid #333;gap:6px"><div class="ic">☰</div><div class="sp" style="font-size:21px;padding-left:4px">STORE NAME</div><div class="ic pl">⌕</div><div class="ic">Cart · 2</div></div>
+<div class="col" style="padding:14px 16px 6px;gap:8px"><div class="lbl"><u>Home</u> › <u>Women</u> › Tops</div><div class="h1">Tops</div>
+<div class="row" style="gap:8px;overflow:hidden"><span class="chip">Tees</span><span class="chip">Shirts</span><span class="chip">Knitwear</span></div>
+<div class="row lbl"><span class="sp">Newest first</span></div>
+<span class="an"><b>catalog</b> GET /categories → match handle · breadcrumb walks parentId up · chips = children</span></div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px 12px;padding:8px 16px"><sc-for list="{{ grid6 }}" as="item" hint-placeholder-count="6"><div class="col" style="gap:3px"><div class="img" style="aspect-ratio:4/5">product image<sc-if value="{{ item.hasBadge }}"><span class="badge pl" style="position:absolute;top:6px;left:6px">{{ item.badge }}</span></sc-if></div><div>{{ item.name }}</div><div class="lbl" style="color:#1f1f1f">{{ item.price }}</div></div></sc-for></div>
+<div class="col" style="padding:12px 16px 20px;gap:6px"><div class="btn2">Load more</div>
+<span class="an"><b>catalog</b> GET /products?category={handle}&amp;limit=12&amp;after={nextCursor} · first new item gets focus</span></div>
+<div class="stub">footer — see 1a</div>
+</div></div>
+
+<div class="dv-opt" id="1e"><div class="dv-olabel"><a class="dv-oid" href="#1e">1e</a>Category — desktop</div><div class="dv-card wf" style="width:1280px">
+<div class="ch-only row" style="height:36px;padding:0 40px;background:#eee;font-size:14px;gap:20px"><span class="sp"></span><span class="pl">Language: <u>English ▾</u></span><span>Currency: <u>USD $ ▾</u></span></div>
+<div class="row" style="height:72px;padding:0 40px;border-bottom:1.5px solid #333;gap:32px"><div style="font-size:24px">STORE NAME</div><nav class="row" style="gap:26px;font-size:17px"><span>Women ▾</span><span>Men ▾</span><span>Accessories ▾</span><span>Gift cards</span></nav><span class="sp"></span><div class="fld pl" data-pl="search" style="width:300px">⌕ Search products…</div><div class="ic" style="padding:0 14px">Cart · 2</div></div>
+<div class="col" style="padding:24px 40px 8px;gap:10px"><div class="lbl"><u>Home</u> › <u>Women</u> › Tops</div>
+<div class="row" style="align-items:flex-end;gap:24px"><div class="h1" style="font-size:38px">Tops</div><div class="row" style="gap:8px"><span class="chip">Tees</span><span class="chip">Shirts</span><span class="chip">Knitwear</span></div><span class="sp"></span><span class="lbl">Sorted: newest first</span></div>
+<span class="an"><b>catalog</b> GET /categories → match handle, parentId chain, children</span></div>
+<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:32px 24px;padding:16px 40px"><sc-for list="{{ grid8 }}" as="item" hint-placeholder-count="8"><div class="col" style="gap:4px"><div class="img" style="aspect-ratio:4/5">product image<sc-if value="{{ item.hasBadge }}"><span class="badge pl" style="position:absolute;top:8px;left:8px">{{ item.badge }}</span></sc-if></div><div class="h3">{{ item.name }}</div><div>{{ item.price }}</div></div></sc-for></div>
+<div class="col" style="align-items:center;padding:16px 40px 32px;gap:6px"><div class="btn2" style="width:280px">Load more</div><span class="an"><b>catalog</b> nextCursor is null → hide Load more · no page numbers</span></div>
+<div class="stub">footer — see 1c</div>
+</div></div>
+
+<div class="dv-opt" id="1f"><div class="dv-olabel"><a class="dv-oid" href="#1f">1f</a>Category — loading skeleton</div><div class="dv-card wf" style="width:375px">
+<div class="row" style="padding:8px 12px;border-bottom:1.5px solid #333;gap:6px"><div class="ic">☰</div><div class="sp" style="font-size:21px;padding-left:4px">STORE NAME</div><div class="ic pl">⌕</div><div class="ic">Cart · 2</div></div>
+<div class="col" style="padding:16px;gap:10px"><div class="ln" style="width:45%"></div><div class="sk" style="height:28px;width:55%"></div><div class="row"><div class="sk" style="width:64px;height:44px"></div><div class="sk" style="width:64px;height:44px"></div><div class="sk" style="width:64px;height:44px"></div></div></div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px 12px;padding:0 16px 16px">
+<div class="col" style="gap:6px"><div class="sk" style="aspect-ratio:4/5"></div><div class="ln" style="width:80%"></div><div class="ln" style="width:40%"></div></div>
+<div class="col" style="gap:6px"><div class="sk" style="aspect-ratio:4/5"></div><div class="ln" style="width:70%"></div><div class="ln" style="width:35%"></div></div>
+<div class="col" style="gap:6px"><div class="sk" style="aspect-ratio:4/5"></div><div class="ln" style="width:75%"></div><div class="ln" style="width:45%"></div></div>
+<div class="col" style="gap:6px"><div class="sk" style="aspect-ratio:4/5"></div><div class="ln" style="width:65%"></div><div class="ln" style="width:30%"></div></div></div>
+<div class="col" style="padding:0 16px 20px;gap:6px"><div class="btn2" style="color:#999;border-color:#bbb">Loading…</div>
+<span class="an">Skeleton cards match real card size → no layout shift. Grid has aria-busy="true"; "Load more" shows the same skeletons appended below.</span></div>
+</div></div>
+
+<div class="dv-opt" id="1g"><div class="dv-olabel"><a class="dv-oid" href="#1g">1g</a>Category — empty</div><div class="dv-card wf" style="width:375px">
+<div class="row" style="padding:8px 12px;border-bottom:1.5px solid #333;gap:6px"><div class="ic">☰</div><div class="sp" style="font-size:21px;padding-left:4px">STORE NAME</div><div class="ic pl">⌕</div><div class="ic">Cart · 2</div></div>
+<div class="col" style="padding:14px 16px;gap:8px"><div class="lbl"><u>Home</u> › <u>Women</u> › Outerwear</div><div class="h1">Outerwear</div></div>
+<div class="col" style="margin:8px 16px 16px;padding:32px 20px;gap:10px;align-items:center;text-align:center;border:1.5px dashed #999;border-radius:8px">
+<div style="width:56px;height:56px;border-radius:50%;border:1.5px solid #999"></div>
+<div class="h2">Nothing here yet</div><div class="lbl">New pieces land often. Check back soon, or browse the rest of the shop.</div>
+<div class="btn" style="align-self:stretch;margin-top:8px">Browse new arrivals</div><u style="min-height:44px;display:flex;align-items:center">Back to Women</u></div>
+<div style="padding:0 16px 20px"><span class="an"><b>catalog</b> GET /products?category={handle} returns no items → empty state; breadcrumb still from GET /categories</span></div>
+<div class="stub">footer — see 1a</div>
+</div></div>
+</div>
+
+<div class="dv-grp"><h2>Product detail</h2><p>Selectors are generated from product.options. Each value is checked against product.variants given the other current picks: no matching variant → "doesn't exist", variant with 0 stock → "out of stock".</p></div>
+<div class="dv-opts">
+
+<div class="dv-opt" id="1h"><div class="dv-olabel"><a class="dv-oid" href="#1h">1h</a>Product — mobile</div><div class="dv-card wf" style="width:375px">
+<div class="row" style="padding:8px 12px;border-bottom:1.5px solid #333;gap:6px"><div class="ic">☰</div><div class="sp" style="font-size:21px;padding-left:4px">STORE NAME</div><div class="ic pl">⌕</div><div class="ic">Cart · 2</div></div>
+<div class="lbl" style="padding:10px 16px"><u>Home</u> › <u>Women</u> › <u>Tops</u> › Linen Tee</div>
+<div class="img" style="height:375px;border-radius:0;border-left:0;border-right:0">product image</div>
+<div class="row pl" data-pl="gallery" style="padding:10px 16px;gap:8px;width:fit-content"><div class="img" style="width:56px;height:56px;border:2.5px solid #222"></div><div class="img" style="width:56px;height:56px"></div><div class="img" style="width:56px;height:56px"></div><div class="img" style="width:56px;height:56px"></div></div>
+<div class="col" style="padding:6px 16px 16px;gap:12px">
+<div class="col" style="gap:2px"><div class="h1">Linen Tee</div><div class="h2">$28.00</div><div class="lbl pl" style="width:fit-content">In stock</div></div>
+<span class="an"><b>catalog</b> GET /products/{handle} → name, options, variants (sku, price, option values). Media and stock are planned</span>
+<fieldset class="col" style="border:0;padding:0;margin:0;gap:6px"><legend style="padding:0 0 6px">Size: <b>M</b></legend>
+<div class="row" style="flex-wrap:wrap"><span class="chip">S</span><span class="chip on">M</span><span class="chip">L</span><span class="chip off pl">XL</span></div></fieldset>
+<fieldset class="col" style="border:0;padding:0;margin:0;gap:6px"><legend style="padding:0 0 6px">Color: <b>Red</b></legend>
+<div class="row" style="flex-wrap:wrap"><span class="chip">Blue</span><span class="chip on">Red</span><span class="chip nx">Black</span></div></fieldset>
+<span class="an">XL/Red out of stock · M/Black doesn't exist. Each option = radio group; disabled values stay announced ("XL, out of stock")</span>
+<div class="lbl">SKU: LT-M-RED</div>
+<div class="row" style="gap:10px"><div class="row bx" style="gap:0"><div class="ic" style="border:0">−</div><div style="width:36px;text-align:center">1</div><div class="ic" style="border:0">+</div></div><div class="btn sp">Add to cart</div></div>
+<span class="an"><b>cart</b> POST /carts { currency } if no cart yet, then POST /carts/{id}/lines (variantId, quantity) → opens cart drawer. Disabled with "Select a size" until every option is picked</span>
+<div class="col" style="gap:6px;margin-top:6px"><div class="h3">Description</div><div class="ln"></div><div class="ln" style="width:92%"></div><div class="ln" style="width:70%"></div></div>
+<div class="col" style="gap:0"><div class="row" style="min-height:48px;border-top:1.5px solid #ccc"><span class="sp">Details &amp; care</span>+</div><div class="row" style="min-height:48px;border-top:1.5px solid #ccc;border-bottom:1.5px solid #ccc"><span class="sp">Shipping &amp; returns</span>+</div></div>
+</div>
+<div class="col pl" data-pl="related products" style="padding:8px 0 20px;gap:10px"><div class="h2" style="padding:0 16px">You may also like</div>
+<div class="row" style="padding:0 16px;gap:12px;overflow:hidden;align-items:flex-start"><sc-for list="{{ related }}" as="item" hint-placeholder-count="4"><div class="col" style="width:140px;flex:none;gap:3px"><div class="img" style="aspect-ratio:4/5">product image</div><div>{{ item.name }}</div><div class="lbl" style="color:#1f1f1f">{{ item.price }}</div></div></sc-for></div>
+<div style="padding:0 16px"><span class="an"><b>catalog</b> GET /products?category={handle}&amp;limit=9, minus this product</span></div></div>
+<div class="stub">footer — see 1a</div>
+</div></div>
+
+<div class="dv-opt" id="1i"><div class="dv-olabel"><a class="dv-oid" href="#1i">1i</a>Product — desktop</div><div class="dv-card wf" style="width:1280px">
+<div class="ch-only row" style="height:36px;padding:0 40px;background:#eee;font-size:14px;gap:20px"><span class="sp"></span><span class="pl">Language: <u>English ▾</u></span><span>Currency: <u>USD $ ▾</u></span></div>
+<div class="row" style="height:72px;padding:0 40px;border-bottom:1.5px solid #333;gap:32px"><div style="font-size:24px">STORE NAME</div><nav class="row" style="gap:26px;font-size:17px"><span>Women ▾</span><span>Men ▾</span><span>Accessories ▾</span><span>Gift cards</span></nav><span class="sp"></span><div class="fld pl" data-pl="search" style="width:300px">⌕ Search products…</div><div class="ic" style="padding:0 14px">Cart · 2</div></div>
+<div class="lbl" style="padding:16px 40px"><u>Home</u> › <u>Women</u> › <u>Tops</u> › Linen Tee</div>
+<div class="row" style="padding:0 40px 32px;gap:48px;align-items:flex-start">
+<div class="row" style="gap:12px;align-items:flex-start"><div class="col pl" data-pl="gallery" style="gap:12px"><div class="img" style="width:80px;height:80px;border:2.5px solid #222"></div><div class="img" style="width:80px;height:80px"></div><div class="img" style="width:80px;height:80px"></div><div class="img" style="width:80px;height:80px"></div></div><div class="img pl" data-pl="zoom" style="width:600px;height:640px">product image (click to zoom)</div></div>
+<div class="col sp" style="gap:16px">
+<div class="col" style="gap:4px"><div class="h1" style="font-size:38px">Linen Tee</div><div class="h2">$28.00</div><div class="lbl pl" style="width:fit-content">In stock</div></div>
+<span class="an"><b>catalog</b> product + variants; price/stock/SKU follow the resolved variant</span>
+<fieldset class="col" style="border:0;padding:0;margin:0;gap:6px"><legend style="padding:0 0 6px">Size: <b>M</b></legend><div class="row"><span class="chip">S</span><span class="chip on">M</span><span class="chip">L</span><span class="chip off pl">XL</span></div></fieldset>
+<fieldset class="col" style="border:0;padding:0;margin:0;gap:6px"><legend style="padding:0 0 6px">Color: <b>Red</b></legend><div class="row"><span class="chip">Blue</span><span class="chip on">Red</span><span class="chip nx">Black</span></div></fieldset>
+<div class="lbl">SKU: LT-M-RED</div>
+<div class="row" style="gap:12px"><div class="row bx" style="gap:0"><div class="ic" style="border:0">−</div><div style="width:36px;text-align:center">1</div><div class="ic" style="border:0">+</div></div><div class="btn sp">Add to cart</div></div>
+<span class="an"><b>cart</b> POST /carts/{id}/lines</span>
+<div class="col" style="gap:6px"><div class="ln"></div><div class="ln" style="width:94%"></div><div class="ln" style="width:80%"></div><div class="ln" style="width:55%"></div></div>
+<div class="col" style="gap:0"><div class="row" style="min-height:48px;border-top:1.5px solid #ccc"><span class="sp">Details &amp; care</span>+</div><div class="row" style="min-height:48px;border-top:1.5px solid #ccc;border-bottom:1.5px solid #ccc"><span class="sp">Shipping &amp; returns</span>+</div></div>
+</div></div>
+<div class="col pl" data-pl="related products" style="padding:16px 40px 36px;gap:14px"><div class="h2">You may also like</div>
+<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:24px"><sc-for list="{{ related }}" as="item" hint-placeholder-count="4"><div class="col" style="gap:4px"><div class="img" style="aspect-ratio:4/5">product image<sc-if value="{{ item.hasBadge }}"><span class="badge pl" style="position:absolute;top:8px;left:8px">{{ item.badge }}</span></sc-if></div><div class="h3">{{ item.name }}</div><div>{{ item.price }}</div></div></sc-for></div>
+<span class="an"><b>catalog</b> related products</span></div>
+<div class="stub">footer — see 1c</div>
+</div></div>
+
+<div class="dv-opt" id="1j"><div class="dv-olabel"><a class="dv-oid" href="#1j">1j</a>Product with no options</div><div class="dv-card wf" style="width:375px">
+<div class="row" style="padding:8px 12px;border-bottom:1.5px solid #333;gap:6px"><div class="ic">☰</div><div class="sp" style="font-size:21px;padding-left:4px">STORE NAME</div><div class="ic pl">⌕</div><div class="ic">Cart · 2</div></div>
+<div class="lbl" style="padding:10px 16px"><u>Home</u> › <u>Accessories</u> › Canvas Tote</div>
+<div class="img" style="height:300px;border-radius:0;border-left:0;border-right:0">product image</div>
+<div class="col" style="padding:16px;gap:12px">
+<div class="col" style="gap:2px"><div class="h1">Canvas Tote</div><div class="h2">$35.00</div><div class="lbl pl" style="width:fit-content">Low stock — 3 left</div></div>
+<div class="lbl">SKU: CT-001</div>
+<div class="row" style="gap:10px"><div class="row bx" style="gap:0"><div class="ic" style="border:0">−</div><div style="width:36px;text-align:center">1</div><div class="ic" style="border:0">+</div></div><div class="btn sp">Add to cart</div></div>
+<span class="an"><b>catalog</b> options = [] → one default variant; no selectors rendered, SKU shown straight away. Stepper max = stock</span>
+<div class="col" style="gap:6px"><div class="h3">Description</div><div class="ln"></div><div class="ln" style="width:80%"></div></div>
+</div>
+<div class="stub">"You may also like" + footer — see 1h</div>
+</div></div>
+
+<div class="dv-opt" id="1k"><div class="dv-olabel"><a class="dv-oid" href="#1k">1k</a>Product — loading skeleton</div><div class="dv-card wf" style="width:375px">
+<div class="row" style="padding:8px 12px;border-bottom:1.5px solid #333;gap:6px"><div class="ic">☰</div><div class="sp" style="font-size:21px;padding-left:4px">STORE NAME</div><div class="ic pl">⌕</div><div class="ic">Cart · 2</div></div>
+<div style="padding:12px 16px"><div class="ln" style="width:60%"></div></div>
+<div class="sk" style="height:375px;border-radius:0"></div>
+<div class="col" style="padding:16px;gap:12px"><div class="sk" style="height:28px;width:60%"></div><div class="sk" style="height:20px;width:25%"></div>
+<div class="ln" style="width:20%;margin-top:6px"></div><div class="row"><div class="sk" style="width:48px;height:44px"></div><div class="sk" style="width:48px;height:44px"></div><div class="sk" style="width:48px;height:44px"></div><div class="sk" style="width:48px;height:44px"></div></div>
+<div class="ln" style="width:20%;margin-top:6px"></div><div class="row"><div class="sk" style="width:64px;height:44px"></div><div class="sk" style="width:64px;height:44px"></div><div class="sk" style="width:64px;height:44px"></div></div>
+<div class="sk" style="height:48px;margin-top:6px"></div>
+<span class="an">Same geometry as 1h. Add to cart not rendered as a live button until variants load</span></div>
+</div></div>
+
+<div class="dv-opt" id="1l"><div class="dv-olabel"><a class="dv-oid" href="#1l">1l</a>Spec — option value states</div><div class="dv-card wf" style="width:420px">
+<div class="col" style="padding:20px;gap:14px">
+<div class="h2">Option value states</div>
+<div class="row" style="gap:14px"><span class="chip">L</span><div class="col" style="gap:0"><b>Available</b><span class="lbl">variant exists with other picks, stock &gt; 0</span></div></div>
+<div class="row" style="gap:14px"><span class="chip on">M</span><div class="col" style="gap:0"><b>Selected</b><span class="lbl">aria-checked="true"; shown in legend "Size: M"</span></div></div>
+<div class="row" style="gap:14px"><span class="chip off pl">XL</span><div class="col" style="gap:0"><b>Out of stock</b><span class="lbl">variant exists, stock = 0 · aria-disabled, label "XL, out of stock"</span></div></div>
+<div class="row" style="gap:14px"><span class="chip nx">Black</span><div class="col" style="gap:0"><b>Doesn't exist</b><span class="lbl">no variant for this combo · aria-disabled, "Black, unavailable in M"</span></div></div>
+<div class="row" style="gap:14px"><span class="chip focus">S</span><div class="col" style="gap:0"><b>Focus</b><span class="lbl">3px ring, never removed. Arrow keys move within group</span></div></div>
+<div class="hr"></div>
+<div class="col" style="gap:4px"><b>Resolve rules</b><span class="lbl">1. Pre-select the first in-stock variant, or nothing if none.</span><span class="lbl">2. Changing Size never silently changes Color; if combo is invalid, Color clears and button reads "Select a color".</span><span class="lbl">3. Price, SKU, stock, gallery image follow the resolved variant.</span><span class="lbl">4. Selection is reflected in the URL (?variant=…) for sharing.</span></div>
+<span class="an"><b>catalog</b> all from product.options + product.variants — no extra calls</span>
+</div></div></div>
+</div>
+
+<div class="dv-grp"><h2>Cart</h2><p>Drawer opens after Add to cart; full page at /cart. Totals are always server-calculated from the cart object, never summed in the browser.</p></div>
+<div class="dv-opts">
+
+<div class="dv-opt" id="1m"><div class="dv-olabel"><a class="dv-oid" href="#1m">1m</a>Cart drawer — desktop</div><div class="dv-card wf" style="width:1280px">
+<div style="position:relative;height:760px;overflow:hidden">
+<div class="row" style="height:72px;padding:0 40px;border-bottom:1.5px solid #333;gap:32px"><div style="font-size:24px">STORE NAME</div><span class="sp"></span><div class="ic" style="padding:0 14px">Cart · 2</div></div>
+<div class="row" style="padding:40px;gap:48px;align-items:flex-start"><div class="img" style="width:600px;height:600px">product page behind</div><div class="col sp"><div class="sk" style="height:40px;width:60%"></div><div class="sk" style="height:24px;width:20%"></div><div class="sk" style="height:48px;margin-top:40px"></div></div></div>
+<div style="position:absolute;inset:0;background:rgba(0,0,0,.4)"></div>
+<aside class="col" style="position:absolute;top:0;right:0;bottom:0;width:440px;background:#fff;border-left:2px solid #222;gap:0">
+<div class="row" style="padding:12px 20px;border-bottom:1.5px solid #333"><div class="h2 sp">Your cart (2)</div><div class="ic focus">✕</div></div>
+<div class="row" style="padding:10px 20px;background:#f2f2f2;font-size:15px">✓ Linen Tee — M / Red added</div>
+<div class="col" style="padding:16px 20px;gap:16px;flex:1">
+<div class="row" style="gap:12px;align-items:flex-start"><div class="img" style="width:76px;height:92px"></div><div class="col sp" style="gap:4px"><div class="row"><span class="sp">Linen Tee — M / Red</span><span>$28.00</span></div><div class="row" style="gap:12px"><div class="row bx" style="gap:0"><div class="ic" style="border:0">−</div><div style="width:28px;text-align:center">1</div><div class="ic" style="border:0">+</div></div><u>Remove</u></div></div></div>
+<div class="row" style="gap:12px;align-items:flex-start"><div class="img" style="width:76px;height:92px"></div><div class="col sp" style="gap:4px"><div class="row"><span class="sp">Gift Card — $50</span><span>$50.00</span></div><div class="row" style="gap:12px"><div class="row bx" style="gap:0"><div class="ic" style="border:0">−</div><div style="width:28px;text-align:center">1</div><div class="ic" style="border:0">+</div></div><u>Remove</u></div></div></div>
+<span class="an"><b>cart</b> lines (variant title, quantity, unit price, total) · PATCH / DELETE /carts/{id}/lines/{lineId}</span>
+</div>
+<div class="col" style="padding:16px 20px 20px;border-top:1.5px solid #333;gap:10px"><div class="row h3"><span class="sp">Subtotal</span><span>$78.00</span></div><div class="lbl">Shipping, discounts and tax calculated at checkout.</div><div class="btn">Checkout</div><div class="btn2">View cart</div>
+<span class="an">role="dialog", focus trapped, Esc closes → focus returns to Cart button</span></div>
+</aside></div>
+</div></div>
+
+<div class="dv-opt" id="1n"><div class="dv-olabel"><a class="dv-oid" href="#1n">1n</a>Cart page — mobile</div><div class="dv-card wf" style="width:375px">
+<div class="row" style="padding:8px 12px;border-bottom:1.5px solid #333;gap:6px"><div class="ic">☰</div><div class="sp" style="font-size:21px;padding-left:4px">STORE NAME</div><div class="ic pl">⌕</div><div class="ic">Cart · 3</div></div>
+<div class="col" style="padding:16px;gap:16px"><div class="h1">Cart</div>
+<div class="row" style="gap:12px;align-items:flex-start"><div class="img" style="width:76px;height:92px"></div><div class="col sp" style="gap:4px"><div>Linen Tee — M / Red</div><div class="lbl">$28.00 each</div><div class="row" style="gap:12px"><div class="row bx" style="gap:0"><div class="ic" style="border:0">−</div><div style="width:28px;text-align:center">2</div><div class="ic" style="border:0">+</div></div><span class="sp"></span><b>$56.00</b></div><u style="min-height:32px">Remove</u></div></div>
+<div class="hr"></div>
+<div class="row" style="gap:12px;align-items:flex-start"><div class="img" style="width:76px;height:92px"></div><div class="col sp" style="gap:4px"><div>Gift Card — $50</div><div class="lbl">$50.00 each</div><div class="row" style="gap:12px"><div class="row bx" style="gap:0"><div class="ic" style="border:0">−</div><div style="width:28px;text-align:center">1</div><div class="ic" style="border:0">+</div></div><span class="sp"></span><b>$50.00</b></div><u style="min-height:32px">Remove</u></div></div>
+<span class="an"><b>cart</b> PATCH /carts/{id}/lines/{lineId} · qty changes debounce, line shows inline spinner, totals re-fetch</span>
+<div class="col pl" data-pl="discounts" style="gap:4px"><label class="lbl">Discount code</label><div class="row"><div class="fld sp">Enter code</div><div class="btn2">Apply</div></div></div>
+<div class="col bx" style="padding:14px;gap:8px">
+<div class="row"><span class="sp">Subtotal</span><span>$106.00</span></div>
+<div class="row pl"><span class="sp">Discount (WELCOME10) <u>remove</u></span><span>−$5.60</span></div>
+<div class="row"><span class="sp">Shipping</span><span class="lbl">at next step</span></div>
+<div class="row pl" data-pl="tax"><span class="sp">Tax</span><span>$8.03</span></div>
+<div class="hr"></div><div class="row h3"><span class="sp">Total</span><span>$108.43 USD</span></div></div>
+<span class="an"><b>cart</b> totals: subtotal, discounts, shipping, tax, total — server-calculated</span>
+<div class="btn">Checkout</div><u style="text-align:center;min-height:44px;display:flex;align-items:center;justify-content:center">Continue shopping</u>
+</div>
+<div class="stub">footer — see 1a</div>
+</div></div>
+
+<div class="dv-opt" id="1o"><div class="dv-olabel"><a class="dv-oid" href="#1o">1o</a>Cart page — desktop</div><div class="dv-card wf" style="width:1280px">
+<div class="row" style="height:72px;padding:0 40px;border-bottom:1.5px solid #333;gap:32px"><div style="font-size:24px">STORE NAME</div><nav class="row" style="gap:26px;font-size:17px"><span>Women ▾</span><span>Men ▾</span><span>Accessories ▾</span><span>Gift cards</span></nav><span class="sp"></span><div class="fld pl" data-pl="search" style="width:300px">⌕ Search products…</div><div class="ic" style="padding:0 14px">Cart · 3</div></div>
+<div class="row" style="padding:32px 40px 40px;gap:48px;align-items:flex-start">
+<div class="col sp" style="gap:0"><div class="h1" style="font-size:38px;margin-bottom:20px">Cart</div>
+<div class="row lbl" style="padding:8px 0;border-bottom:1.5px solid #333"><span class="sp">Product</span><span style="width:110px">Price</span><span style="width:160px">Quantity</span><span style="width:100px;text-align:right">Total</span></div>
+<div class="row" style="padding:16px 0;border-bottom:1.5px solid #ccc"><div class="row sp" style="gap:14px"><div class="img" style="width:80px;height:96px"></div><div class="col" style="gap:4px"><span>Linen Tee — M / Red</span><span class="lbl">SKU LT-M-RED</span><u class="lbl">Remove</u></div></div><span style="width:110px">$28.00</span><div style="width:160px"><div class="row bx" style="gap:0;width:fit-content"><div class="ic" style="border:0">−</div><div style="width:28px;text-align:center">2</div><div class="ic" style="border:0">+</div></div></div><b style="width:100px;text-align:right">$56.00</b></div>
+<div class="row" style="padding:16px 0;border-bottom:1.5px solid #ccc"><div class="row sp" style="gap:14px"><div class="img" style="width:80px;height:96px"></div><div class="col" style="gap:4px"><span>Gift Card — $50</span><span class="lbl">Digital · emailed</span><u class="lbl">Remove</u></div></div><span style="width:110px">$50.00</span><div style="width:160px"><div class="row bx" style="gap:0;width:fit-content"><div class="ic" style="border:0">−</div><div style="width:28px;text-align:center">1</div><div class="ic" style="border:0">+</div></div></div><b style="width:100px;text-align:right">$50.00</b></div>
+<span class="an"><b>cart</b> lines — semantic table on desktop, stacked list on mobile</span></div>
+<aside class="col bx" style="width:380px;padding:20px;gap:10px;margin-top:62px"><div class="h2">Order summary</div>
+<div class="col pl" data-pl="discounts" style="gap:4px"><label class="lbl">Discount code</label><div class="row"><div class="fld sp">Enter code</div><div class="btn2">Apply</div></div></div>
+<div class="row"><span class="sp">Subtotal</span><span>$106.00</span></div><div class="row pl"><span class="sp">Discount (WELCOME10)</span><span>−$5.60</span></div><div class="row"><span class="sp">Shipping</span><span class="lbl">at next step</span></div><div class="row pl" data-pl="tax"><span class="sp">Tax</span><span>$8.03</span></div>
+<div class="hr"></div><div class="row h3"><span class="sp">Total</span><span>$108.43 USD</span></div><div class="btn">Checkout</div>
+<span class="an"><b>cart</b> totals · sticky on scroll</span></aside></div>
+<div class="stub">footer — see 1c</div>
+</div></div>
+
+<div class="dv-opt" id="1p"><div class="dv-olabel"><a class="dv-oid" href="#1p">1p</a>Cart — empty</div><div class="dv-card wf" style="width:375px">
+<div class="row" style="padding:8px 12px;border-bottom:1.5px solid #333;gap:6px"><div class="ic">☰</div><div class="sp" style="font-size:21px;padding-left:4px">STORE NAME</div><div class="ic pl">⌕</div><div class="ic">Cart · 0</div></div>
+<div class="col" style="padding:16px;gap:12px"><div class="h1">Cart</div>
+<div class="col" style="padding:40px 20px;gap:10px;align-items:center;text-align:center;border:1.5px dashed #999;border-radius:8px"><div style="width:56px;height:56px;border-radius:50%;border:1.5px solid #999"></div><div class="h2">Your cart is empty</div><div class="lbl">Items you add will show up here.</div><div class="btn" style="align-self:stretch;margin-top:8px">Start shopping</div></div>
+<span class="an"><b>cart</b> no lines (or no cart yet). Same state in drawer</span></div>
+<div class="stub">footer — see 1a</div>
+</div></div>
+</div>
+
+<div class="dv-grp"><h2>Checkout</h2><p>Four steps with a visible progress indicator. Completed steps are links back; future steps are not. Everything below is mobile except the review step, shown on desktop.</p></div>
+<div class="dv-opts">
+
+<div class="dv-opt" id="1q"><div class="dv-olabel"><a class="dv-oid" href="#1q">1q</a>Checkout flow &amp; rules</div><div class="dv-card wf" style="width:960px">
+<div class="col" style="padding:24px;gap:18px">
+<div class="h2">Flow</div>
+<div class="row" style="gap:10px;flex-wrap:wrap"><span class="bx" style="padding:8px 12px">Cart</span>→<span class="bx" style="padding:8px 12px">1 Address</span>→<span class="bx" style="padding:8px 12px">2 Shipping</span>→<span class="bx" style="padding:8px 12px">3 Payment</span>→<span class="bx" style="padding:8px 12px">4 Review</span>→<span class="bx" style="padding:8px 12px;border-style:dashed">Placing order…</span>→<span class="bx" style="padding:8px 12px;background:#222;color:#fff">Confirmation</span></div>
+<div class="row" style="gap:10px;padding-left:530px"><span>↳ payment fails → back to <b>3 Payment</b>, error banner, cart intact (<a class="dv-oid" href="#1w">1w</a>)</span></div>
+<div class="hr"></div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:24px">
+<div class="col" style="gap:10px"><b>Every cart — shipping always required (ADR 0016)</b>
+<div class="row" style="gap:6px;font-size:14px"><span class="dot done">✓</span>Address<span class="hr" style="width:24px"></span><span class="dot cur">2</span><b>Shipping</b><span class="hr" style="width:24px"></span><span class="dot">3</span>Payment<span class="hr" style="width:24px"></span><span class="dot">4</span>Review</div>
+<div class="col" style="gap:8px;margin-top:8px;padding:10px;border:1.5px dashed #999;border-radius:6px;color:#777"><div class="row"><span class="badge" style="border-style:dashed">Future</span><b>Gift cards only — not built</b></div>
+<div class="row" style="gap:6px;font-size:14px"><span class="dot done">✓</span>Contact<span class="hr" style="width:24px"></span><span class="dot cur">2</span><b>Payment</b><span class="hr" style="width:24px"></span><span class="dot">3</span>Review</div>
+<span class="lbl">Would skip shipping for digital-only carts. Blocked: ADR 0016 requires shipping on every cart, and the catalog has no "requires shipping" flag yet.</span></div></div>
+<div class="col" style="gap:6px"><b>Going back</b>
+<span class="lbl">• Review shows every section with "Edit" → jumps to that step.</span>
+<span class="lbl">• After editing, "Continue" moves forward through later steps that depend on the change, then returns to Review.</span>
+<span class="lbl">• Changing the shipping address makes the API drop the shipping method. The shopper must confirm step 2 again; the storefront pre-selects the previous option if it's still offered.</span>
+<span class="lbl">• Browser back = previous step. Each step has its own URL.</span>
+<span class="lbl">• Progress = &lt;nav&gt; list, current step aria-current="step", plus "Step 2 of 4" in the heading.</span></div></div>
+<span class="an"><b>checkout</b> POST /carts/{id}/addresses · GET /carts/{id}/shipping-options · POST /carts/{id}/shipping-method · POST /carts/{id}/payment-method · POST /carts/{id}/complete (Idempotency-Key) — all public Store API</span>
+</div></div></div>
+
+<div class="dv-opt" id="1r"><div class="dv-olabel"><a class="dv-oid" href="#1r">1r</a>Step 1 — Address (with focus order)</div><div class="dv-card wf" style="width:375px">
+<div class="row" style="padding:8px 12px;border-bottom:1.5px solid #333"><div class="ic">‹ Cart</div><div class="sp" style="text-align:center;font-size:21px">STORE NAME</div><span class="lbl" style="width:62px;text-align:right">Secure</span></div>
+<nav class="row" style="padding:12px 16px;gap:5px;font-size:13px;border-bottom:1.5px solid #ddd"><span class="dot cur">1</span><b>Address</b><span class="sp hr"></span><span class="dot">2</span>Shipping<span class="sp hr"></span><span class="dot">3</span>Payment<span class="sp hr"></span><span class="dot">4</span>Review</nav>
+<div class="row" style="padding:0 16px;min-height:48px;background:#f2f2f2;border-bottom:1.5px solid #ddd"><span class="sp">Show order summary ▾</span><b>$108.43</b></div>
+<div class="col" style="padding:16px;gap:14px">
+<div class="h2">Step 1 of 4: Address</div>
+<div class="col" style="gap:4px"><label class="row" style="gap:6px"><span class="fo">1</span>Email</label><div class="fld focus">jo@example.com</div><span class="lbl">For your receipt and order updates</span></div>
+<div class="h3" style="margin-top:4px">Shipping address</div>
+<div class="row" style="gap:10px"><div class="col sp" style="gap:4px"><label class="row" style="gap:6px"><span class="fo">2</span>First name</label><div class="fld"></div></div><div class="col sp" style="gap:4px"><label class="row" style="gap:6px"><span class="fo">3</span>Last name</label><div class="fld"></div></div></div>
+<div class="col" style="gap:4px"><label class="row" style="gap:6px"><span class="fo">4</span>Country</label><div class="fld" style="color:#222">United States ▾</div></div>
+<div class="col" style="gap:4px"><label class="row" style="gap:6px"><span class="fo">5</span>Address</label><div class="fld"></div></div>
+<div class="col" style="gap:4px"><label class="row" style="gap:6px"><span class="fo">6</span>Apartment, suite (optional)</label><div class="fld"></div></div>
+<div class="col" style="gap:4px"><label class="row" style="gap:6px"><span class="fo">7</span>City</label><div class="fld"></div></div>
+<div class="row" style="gap:10px;align-items:flex-start"><div class="col sp" style="gap:4px"><label class="row" style="gap:6px"><span class="fo">8</span>Region</label><div class="fld" style="color:#222">California ▾</div></div><div class="col sp" style="gap:4px"><label class="row" style="gap:6px"><span class="fo">9</span>ZIP code</label><div class="fld err" style="color:#222">94A1</div><span style="font-size:14px">⚠ Enter a 5-digit ZIP code</span></div></div>
+<div class="col" style="gap:4px"><label class="row" style="gap:6px"><span class="fo">10</span>Phone (optional)</label><div class="fld"></div></div>
+<span class="an"><b>channel</b> countries + address format per country · API fields include firstName, lastName, region</span>
+<label class="row" style="gap:10px;min-height:48px"><span class="fo">11</span><span class="cbx">✓</span>Billing address same as shipping</label>
+<span class="an">Unchecking reveals the same field set for billing, inline below</span>
+<div class="row" style="gap:6px"><span class="fo">12</span><div class="btn sp">Continue to shipping</div></div>
+<span class="an"><b>checkout</b> one command: POST /carts/{id}/addresses (email, shipping, billing). Errors: inline text + icon (not color alone), summary at top on submit, focus to first error. autocomplete attrs on every field</span>
+</div></div></div>
+
+<div class="dv-opt" id="1s"><div class="dv-olabel"><a class="dv-oid" href="#1s">1s</a>Step 2 — Shipping method</div><div class="dv-card wf" style="width:375px">
+<div class="row" style="padding:8px 12px;border-bottom:1.5px solid #333"><div class="ic">‹ Cart</div><div class="sp" style="text-align:center;font-size:21px">STORE NAME</div><span class="lbl" style="width:62px;text-align:right">Secure</span></div>
+<nav class="row" style="padding:12px 16px;gap:5px;font-size:13px;border-bottom:1.5px solid #ddd"><span class="dot done">✓</span><u>Address</u><span class="sp hr"></span><span class="dot cur">2</span><b>Shipping</b><span class="sp hr"></span><span class="dot">3</span>Payment<span class="sp hr"></span><span class="dot">4</span>Review</nav>
+<div class="row" style="padding:0 16px;min-height:48px;background:#f2f2f2;border-bottom:1.5px solid #ddd"><span class="sp">Show order summary ▾</span><b>$108.43</b></div>
+<div class="col" style="padding:16px;gap:14px">
+<div class="col bx" style="padding:4px 14px;gap:0;font-size:15px"><div class="row" style="min-height:44px;border-bottom:1px solid #ddd"><span class="lbl" style="width:64px">Contact</span><span class="sp">jo@example.com</span><u>Change</u></div><div class="row" style="min-height:44px"><span class="lbl" style="width:64px">Ship to</span><span class="sp">12 Main St, Oakland CA</span><u>Change</u></div></div>
+<div class="h2">Step 2 of 4: Shipping method</div>
+<fieldset class="col" style="border:0;padding:0;margin:0;gap:10px"><legend class="lbl" style="padding-bottom:8px">Choose how to get it</legend>
+<label class="row bx" style="padding:12px 14px;min-height:60px;border-width:2.5px;gap:12px"><span class="rad on"></span><span class="col sp" style="gap:0"><span>Standard</span><span class="lbl pl" style="align-self:flex-start">3–5 business days</span></span><b>$5.00</b></label>
+<label class="row bx" style="padding:12px 14px;min-height:60px;gap:12px"><span class="rad"></span><span class="col sp" style="gap:0"><span>Express</span><span class="lbl pl" style="align-self:flex-start">1–2 business days</span></span><b>$15.00</b></label>
+<label class="row bx" style="padding:12px 14px;min-height:60px;gap:12px"><span class="rad"></span><span class="col sp" style="gap:0"><span>Store pickup</span><span class="lbl pl" style="align-self:flex-start">Ready tomorrow</span></span><b>Free</b></label></fieldset>
+<span class="an"><b>checkout</b> GET /carts/{id}/shipping-options (depends on address) → POST /carts/{id}/shipping-method. Always shown (ADR 0016)</span>
+<div class="btn">Continue to payment</div><u style="text-align:center;min-height:44px;display:flex;align-items:center;justify-content:center">‹ Back to address</u>
+</div></div></div>
+
+<div class="dv-opt" id="1t"><div class="dv-olabel"><a class="dv-oid" href="#1t">1t</a>Step 3 — Payment</div><div class="dv-card wf" style="width:375px">
+<div class="row" style="padding:8px 12px;border-bottom:1.5px solid #333"><div class="ic">‹ Cart</div><div class="sp" style="text-align:center;font-size:21px">STORE NAME</div><span class="lbl" style="width:62px;text-align:right">Secure</span></div>
+<nav class="row" style="padding:12px 16px;gap:5px;font-size:13px;border-bottom:1.5px solid #ddd"><span class="dot done">✓</span><u>Address</u><span class="sp hr"></span><span class="dot done">✓</span><u>Shipping</u><span class="sp hr"></span><span class="dot cur">3</span><b>Payment</b><span class="sp hr"></span><span class="dot">4</span>Review</nav>
+<div class="row" style="padding:0 16px;min-height:48px;background:#f2f2f2;border-bottom:1.5px solid #ddd"><span class="sp">Show order summary ▾</span><b>$113.43</b></div>
+<div class="col" style="padding:16px;gap:14px">
+<div class="h2">Step 3 of 4: Payment</div>
+<fieldset class="col" style="border:0;padding:0;margin:0;gap:10px"><legend class="lbl" style="padding-bottom:8px">Payment method</legend>
+<div class="col bx" style="border-width:2.5px;gap:0">
+<label class="row" style="padding:12px 14px;min-height:56px;gap:12px;border-bottom:1.5px solid #ccc"><span class="rad on"></span><span class="sp">Credit or debit card</span></label>
+<div class="col" style="padding:14px;gap:10px;background:#f7f7f7">
+<div class="col" style="gap:4px"><label>Card number</label><div class="fld">1234 1234 1234 1234</div></div>
+<div class="row" style="gap:10px"><div class="col sp" style="gap:4px"><label>Expiry (MM/YY)</label><div class="fld"></div></div><div class="col sp" style="gap:4px"><label>Security code</label><div class="fld"></div></div></div>
+<div class="col" style="gap:4px"><label>Name on card</label><div class="fld"></div></div>
+<span class="an">Card fields = payment provider's hosted fields; only a token reaches the Store API</span></div></div>
+<label class="row bx pl" style="padding:12px 14px;min-height:56px;gap:12px"><span class="rad"></span><span class="sp">Digital wallet</span></label>
+<label class="row bx pl" style="padding:12px 14px;min-height:56px;gap:12px"><span class="rad"></span><span class="sp">Bank transfer</span></label></fieldset>
+<span class="an"><b>checkout</b> POST /carts/{id}/payment-method → returns provider client data that mounts the hosted fields</span>
+<div class="row" style="font-size:15px;min-height:44px"><span class="lbl" style="width:64px">Billing</span><span class="sp">Same as shipping</span><u>Change</u></div>
+<div class="btn">Review order</div><u style="text-align:center;min-height:44px;display:flex;align-items:center;justify-content:center">‹ Back to shipping</u>
+</div></div></div>
+
+<div class="dv-opt" id="1u"><div class="dv-olabel"><a class="dv-oid" href="#1u">1u</a>Step 4 — Review &amp; place order (desktop)</div><div class="dv-card wf" style="width:1280px">
+<div class="row" style="height:72px;padding:0 40px;border-bottom:1.5px solid #333;gap:32px"><u>‹ Back to cart</u><span class="sp" style="text-align:center;font-size:24px">STORE NAME</span><span class="lbl">Secure checkout</span></div>
+<nav class="row" style="padding:16px 40px;gap:10px;font-size:16px;border-bottom:1.5px solid #ddd;justify-content:center"><span class="dot done">✓</span><u>Address</u><span class="hr" style="width:60px"></span><span class="dot done">✓</span><u>Shipping</u><span class="hr" style="width:60px"></span><span class="dot done">✓</span><u>Payment</u><span class="hr" style="width:60px"></span><span class="dot cur">4</span><b>Review</b></nav>
+<div class="row" style="padding:32px 40px 40px;gap:48px;align-items:flex-start">
+<div class="col sp" style="gap:0"><div class="h1" style="font-size:34px;margin-bottom:16px">Step 4 of 4: Review your order</div>
+<div class="row" style="padding:16px 0;border-top:1.5px solid #333;align-items:flex-start"><span class="lbl" style="width:180px">Contact</span><span class="sp">jo@example.com</span><u>Edit</u></div>
+<div class="row" style="padding:16px 0;border-top:1.5px solid #ccc;align-items:flex-start"><span class="lbl" style="width:180px">Shipping address</span><span class="col sp" style="gap:0"><span>Jo Rivera</span><span>12 Main St, Apt 4</span><span>Oakland, CA 94612, US</span></span><u>Edit</u></div>
+<div class="row" style="padding:16px 0;border-top:1.5px solid #ccc;align-items:flex-start"><span class="lbl" style="width:180px">Shipping method</span><span class="sp">Standard · <span class="pl">3–5 business days</span> · $5.00</span><u>Edit</u></div>
+<div class="row" style="padding:16px 0;border-top:1.5px solid #ccc;align-items:flex-start"><span class="lbl" style="width:180px">Payment</span><span class="sp">Test payments</span><u>Edit</u></div>
+<div class="row" style="padding:16px 0;border-top:1.5px solid #ccc;border-bottom:1.5px solid #ccc;align-items:flex-start"><span class="lbl" style="width:180px">Billing address</span><span class="sp">Same as shipping</span><u>Edit</u></div>
+<span class="an">Edit address → Step 1 → Step 2 (API dropped the method; shopper re-confirms) → back here. Edit payment → Step 3 → back here</span></div>
+<aside class="col bx" style="width:420px;padding:20px;gap:12px"><div class="h2">Order summary</div>
+<div class="row" style="gap:12px"><div class="img" style="width:56px;height:68px"></div><span class="col sp" style="gap:0"><span>Linen Tee — M / Red</span><span class="lbl">Qty 2</span></span><span>$56.00</span></div>
+<div class="row" style="gap:12px"><div class="img" style="width:56px;height:68px"></div><span class="col sp" style="gap:0"><span>Gift Card — $50</span><span class="lbl">Qty 1</span></span><span>$50.00</span></div>
+<div class="hr"></div>
+<div class="row"><span class="sp">Subtotal</span><span>$106.00</span></div><div class="row pl"><span class="sp">Discount</span><span>−$5.60</span></div><div class="row"><span class="sp">Shipping</span><span>$5.00</span></div><div class="row pl" data-pl="tax"><span class="sp">Tax</span><span>$8.03</span></div>
+<div class="hr"></div><div class="row h3"><span class="sp">Total</span><span>$113.43 USD</span></div>
+<div class="btn">Place order · $113.43</div><span class="lbl">By placing your order you agree to the <u>Terms</u> and <u>Privacy policy</u>.</span>
+<span class="an"><b>checkout</b> POST /carts/{id}/complete with Idempotency-Key</span></aside></div>
+</div></div>
+
+<div class="dv-opt" id="1v"><div class="dv-olabel"><a class="dv-oid" href="#1v">1v</a>Placing your order…</div><div class="dv-card wf" style="width:375px">
+<div class="row" style="padding:8px 12px;border-bottom:1.5px solid #333"><div class="ic" style="color:#bbb;border-color:#ccc">‹ Cart</div><div class="sp" style="text-align:center;font-size:21px">STORE NAME</div><span class="lbl" style="width:62px;text-align:right">Secure</span></div>
+<div style="position:relative">
+<div class="col" style="padding:16px;gap:12px;opacity:.35"><div class="sk" style="height:28px;width:70%"></div><div class="sk" style="height:60px"></div><div class="sk" style="height:60px"></div><div class="sk" style="height:60px"></div><div class="sk" style="height:140px"></div></div>
+<div class="col" style="position:absolute;inset:0;align-items:center;justify-content:center;gap:12px;text-align:center;padding:24px">
+<div style="width:56px;height:56px;border-radius:50%;border:5px solid #ddd;border-top-color:#222"></div>
+<div class="h2">Placing your order…</div><div class="lbl">This can take a few seconds. Please don't close or refresh this page.</div></div></div>
+<div class="col" style="padding:0 16px 20px;gap:8px"><div class="btn dis">Placing order…</div>
+<span class="an">Button disabled + aria-busy; status in aria-live="polite". One Idempotency-Key per tap of Place order, reused on retry. A double tap can't charge twice: the second request gets 409 completion_in_progress and is handled as <a class="dv-oid" href="#3e">3e</a></span></div>
+</div></div>
+
+<div class="dv-opt" id="1w"><div class="dv-olabel"><a class="dv-oid" href="#1w">1w</a>Payment failed → back to step 3</div><div class="dv-card wf" style="width:375px">
+<div class="row" style="padding:8px 12px;border-bottom:1.5px solid #333"><div class="ic">‹ Cart</div><div class="sp" style="text-align:center;font-size:21px">STORE NAME</div><span class="lbl" style="width:62px;text-align:right">Secure</span></div>
+<nav class="row" style="padding:12px 16px;gap:5px;font-size:13px;border-bottom:1.5px solid #ddd"><span class="dot done">✓</span><u>Address</u><span class="sp hr"></span><span class="dot done">✓</span><u>Shipping</u><span class="sp hr"></span><span class="dot cur">3</span><b>Payment</b><span class="sp hr"></span><span class="dot">4</span>Review</nav>
+<div class="col" style="padding:16px;gap:14px">
+<div class="col focus" style="border:2.5px solid #222;border-radius:6px;padding:14px;gap:4px;background:#f2f2f2"><b>⚠ Your payment didn't go through</b><span style="font-size:15px">The card was declined and you haven't been charged. Your cart is saved — try another card or payment method.</span></div>
+<span class="an">role="alert"; focus moves here. Cart, address and shipping untouched</span>
+<div class="h2">Step 3 of 4: Payment</div>
+<div class="col bx" style="border-width:2.5px;gap:0">
+<label class="row" style="padding:12px 14px;min-height:56px;gap:12px;border-bottom:1.5px solid #ccc"><span class="rad on"></span><span class="sp">Credit or debit card</span></label>
+<div class="col" style="padding:14px;gap:10px;background:#f7f7f7"><div class="col" style="gap:4px"><label>Card number</label><div class="fld"></div></div>
+<div class="row" style="gap:10px"><div class="col sp" style="gap:4px"><label>Expiry</label><div class="fld"></div></div><div class="col sp" style="gap:4px"><label>Security code</label><div class="fld"></div></div></div></div></div>
+<label class="row bx pl" style="padding:12px 14px;min-height:56px;gap:12px"><span class="rad"></span><span class="sp">Digital wallet</span></label>
+<span class="an">Card fields cleared for security; method choice kept</span>
+<div class="btn">Review order</div>
+</div></div></div>
+</div>
+
+<div class="dv-grp"><h2>Order confirmation &amp; not found</h2><p>Confirmation is fetched with GET /orders/{id} so it survives refresh. Not found is a real 404 response for unknown product/category slugs.</p></div>
+<div class="dv-opts">
+
+<div class="dv-opt" id="1x"><div class="dv-olabel"><a class="dv-oid" href="#1x">1x</a>Order confirmation — mobile</div><div class="dv-card wf" style="width:375px">
+<div class="row" style="padding:8px 12px;border-bottom:1.5px solid #333;gap:6px"><div class="ic">☰</div><div class="sp" style="font-size:21px;padding-left:4px">STORE NAME</div><div class="ic pl">⌕</div><div class="ic">Cart · 0</div></div>
+<div class="col" style="padding:24px 16px 8px;gap:8px;align-items:center;text-align:center">
+<div style="width:60px;height:60px;border-radius:50%;border:2.5px solid #222;display:flex;align-items:center;justify-content:center;font-size:28px">✓</div>
+<div class="h1">Thanks, Jo!</div><div class="h3">Order #10482</div><div class="lbl">Confirmation sent to jo@example.com</div>
+<span class="an"><b>order</b> GET /orders/{id} (the id is the shopper's key) · cart cleared</span></div>
+<div class="col" style="padding:12px 16px 20px;gap:12px">
+<div class="col bx" style="padding:14px;gap:10px">
+<div class="row" style="gap:12px"><div class="img" style="width:52px;height:64px"></div><span class="col sp" style="gap:0"><span>Linen Tee — M / Red</span><span class="lbl">Qty 2</span></span><span>$56.00</span></div>
+<div class="row" style="gap:12px"><div class="img" style="width:52px;height:64px"></div><span class="col sp" style="gap:0"><span>Gift Card — $50</span><span class="lbl">Qty 1 · emailed</span></span><span>$50.00</span></div>
+<div class="hr"></div>
+<div class="row"><span class="sp">Subtotal</span><span>$106.00</span></div><div class="row pl"><span class="sp">Discount</span><span>−$5.60</span></div><div class="row"><span class="sp">Shipping</span><span>$5.00</span></div><div class="row pl" data-pl="tax"><span class="sp">Tax</span><span>$8.03</span></div><div class="row h3"><span class="sp">Total paid</span><span>$113.43</span></div></div>
+<div class="col" style="gap:2px"><span class="lbl">Shipping to</span><span>Jo Rivera, 12 Main St, Apt 4, Oakland CA 94612</span></div>
+<div class="col" style="gap:2px"><span class="lbl">Method</span><span>Standard · <span class="pl">3–5 business days</span></span></div>
+<div class="col" style="gap:2px"><span class="lbl">Payment</span><span>Test payments</span></div>
+<span class="an"><b>order</b> lines, totals, addresses, shipping method, payment provider name (no card details stored)</span>
+<div class="btn">Continue shopping</div>
+</div>
+<div class="stub">footer — see 1a</div>
+</div></div>
+
+<div class="dv-opt" id="1y"><div class="dv-olabel"><a class="dv-oid" href="#1y">1y</a>Not found — mobile</div><div class="dv-card wf" style="width:375px">
+<div class="row" style="padding:8px 12px;border-bottom:1.5px solid #333;gap:6px"><div class="ic">☰</div><div class="sp" style="font-size:21px;padding-left:4px">STORE NAME</div><div class="ic pl">⌕</div><div class="ic">Cart · 2</div></div>
+<div class="col" style="padding:40px 20px 24px;gap:12px;text-align:center;align-items:center">
+<div style="font-size:64px;line-height:1">404</div><div class="h1">We can't find that page</div><div class="lbl">The product or category may have moved or is no longer available.</div>
+<div class="btn" style="align-self:stretch;margin-top:8px">Back to the shop</div>
+<div class="fld pl" data-pl="search" style="align-self:stretch">⌕ Search products…</div></div>
+<div class="col" style="padding:0 20px 24px;gap:0"><span class="lbl" style="padding-bottom:6px">Popular categories</span>
+<sc-for list="{{ cats }}" as="c" hint-placeholder-count="4"><div class="row" style="min-height:48px;border-top:1.5px solid #ccc"><span class="sp">{{ c.name }}</span>›</div></sc-for>
+<span class="an"><b>catalog</b> no product / no category with that handle → HTTP 404 · links from GET /categories</span></div>
+<div class="stub">footer — see 1a</div>
+</div></div>
+
+<div class="dv-opt" id="1z"><div class="dv-olabel"><a class="dv-oid" href="#1z">1z</a>Not found — desktop</div><div class="dv-card wf" style="width:1280px">
+<div class="row" style="height:72px;padding:0 40px;border-bottom:1.5px solid #333;gap:32px"><div style="font-size:24px">STORE NAME</div><nav class="row" style="gap:26px;font-size:17px"><span>Women ▾</span><span>Men ▾</span><span>Accessories ▾</span><span>Gift cards</span></nav><span class="sp"></span><div class="fld pl" data-pl="search" style="width:300px">⌕ Search products…</div><div class="ic" style="padding:0 14px">Cart · 2</div></div>
+<div class="col" style="padding:80px 40px;gap:14px;align-items:center;text-align:center">
+<div style="font-size:88px;line-height:1">404</div><div class="h1" style="font-size:38px">We can't find that page</div><div class="lbl" style="font-size:17px">The product or category may have moved or is no longer available.</div>
+<div class="row" style="gap:12px;margin-top:10px"><div class="btn">Back to the shop</div><div class="btn2">New arrivals</div></div></div>
+<div class="stub">footer — see 1c</div>
+</div></div>
+</div>
+
+<p class="dv-next">Try next: "explore 3 alternatives to the PDP selectors (<a class="dv-oid" href="#1h">1h</a>) — dropdowns, swatches, single variant list" · "make checkout a single-page accordion instead of <a class="dv-oid" href="#1r">1r</a>–<a class="dv-oid" href="#1u">1u</a>" · "add search results + no-results pages"</p>
+</section>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;showAnnotations&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Wireframe&quot;},&quot;showPlanned&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Wireframe&quot;},&quot;multiChannel&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Channel&quot;}}">
+class Component extends DCLogic {
+  componentDidMount() { this.sync(); }
+  componentDidUpdate() { this.sync(); }
+  sync() {
+    const b = document.body.classList;
+    b.toggle('hide-an', this.props.showAnnotations === false);
+    b.toggle('single-ch', this.props.multiChannel === false);
+    b.toggle('hide-pl', this.props.showPlanned === false);
+  }
+  renderVals() {
+    const P = [
+      { name: 'Linen Tee', price: 'From $24', badge: 'New' },
+      { name: 'Wool Beanie', price: '$22', badge: '' },
+      { name: 'Canvas Tote', price: '$35', badge: 'Low stock' },
+      { name: 'Relaxed Chino', price: 'From $64', badge: 'Sold out' },
+      { name: 'Gift Card', price: 'From $25', badge: '' },
+      { name: 'Cord Overshirt', price: '$89', badge: '' },
+      { name: 'Leather Belt', price: 'From $42', badge: 'Low stock' },
+      { name: 'Rib Socks, 3-pack', price: '$18', badge: '' }
+    ].map(p => ({ ...p, hasBadge: !!p.badge }));
+    return {
+      newArrivals: P.slice(0, 4),
+      grid6: P.slice(0, 6),
+      grid8: P,
+      related: [P[5], P[6], P[2], P[7]],
+      cats: [{ name: 'Women' }, { name: 'Men' }, { name: 'Accessories' }, { name: 'Gift cards' }]
+    };
+  }
+}
+</script>
+</body>
+</html>

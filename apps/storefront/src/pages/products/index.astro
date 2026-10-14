@@ -1,0 +1,18 @@
+---
+import ListingPage from '../../components/ListingPage.astro';
+import { loadListingPage } from '../../lib/store-api.js';
+
+const PAGE_SIZE = 12;
+const page = await loadListingPage(Astro.url, { currency: Astro.locals.currency, limit: PAGE_SIZE });
+if (!page) return Astro.redirect(Astro.url.pathname);
+---
+
+<ListingPage
+  title="New arrivals"
+  page={page}
+  pageSize={PAGE_SIZE}
+  trail={[
+    { name: 'Home', href: '/' },
+    { name: 'New arrivals' },
+  ]}
+/>

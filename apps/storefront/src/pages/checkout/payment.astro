@@ -1,0 +1,123 @@
+---
+import Checkout from '../../layouts/Checkout.astro';
+import { checkoutRedirect } from '../../lib/checkout-flow.js';
+import { addressLines, billsToShipping, checkoutErrorMessage } from '../../lib/checkout.js';
+import { listPaymentMethods, selectPaymentMethod } from '../../lib/store-api.js';
+
+/**
+ * Step 3 (1t): choose how to pay. Choosing prepares a payment for the cart total. A declined
+ * payment lands back here with the cart, address and shipping intact (1w). A channel with no
+ * payment methods can't continue (3g).
+ *
+ * Card fields would be a provider's hosted fields; the only provider so far is the test one,
+ * which takes no card and lets the shopper pick what happens (ADR 0017, ADR 0019).
+ */
+const TEST_OUTCOMES = [
+  { value: 'authorize', label: 'Payment succeeds' },
+  { value: 'decline', label: 'Payment is declined' },
+  { value: 'requires_action', label: 'Bank asks to confirm' },
+  { value: 'capture_decline', label: 'Succeeds, but capture is declined later' },
+] as const;
+
+const { cart } = Astro.locals;
+const away = checkoutRedirect(cart, 'payment');
+if (away) return Astro.redirect(away);
+
+let error = Astro.url.searchParams.get('error');
+let selected = cart!.paymentMethod?.providerId ?? null;
+let outcome = 'authorize';
+
+if (Astro.request.method === 'POST') {
+  const form = await Astro.request.formData();
+  const providerId = form.get('providerId');
+  const chosen = form.get('outcome');
+  if (typeof chosen === 'string' && TEST_OUTCOMES.some((o) => o.value === chosen)) outcome = chosen;
+  if (typeof providerId === 'string' && providerId !== '') {
+    const result = await selectPaymentMethod(cart!.id, providerId, providerId === 'test' ? { outcome } : {});
+    if (result.ok) return Astro.redirect('/checkout/review', 303);
+    error = result.code;
+    selected = providerId;
+  } else {
+    error = 'payment_required';
+  }
+  Astro.response.status = 400;
+}
+
+const methods = await listPaymentMethods(cart!.id);
+if (methods.length === 0) console.warn(`[storefront] No payment methods are enabled for this channel; checkout cannot finish (cart ${cart!.id}).`);
+if (!methods.some((m) => m.providerId === selected)) selected = methods[0]?.providerId ?? null;
+const message = error && checkoutErrorMessage(error);
+const billing = billsToShipping(cart!) ? 'Same as shipping' : addressLines(cart!.billingAddress!).join(', ');
+---
+
+<Checkout title="Payment" step="payment">
+  {
+    message && (
+      <div class="banner" role="alert" tabindex="-1" data-focus-on-load>
+        <p class="title">{message.title}</p>
+        <p>{message.body}</p>
+      </div>
+    )
+  }
+  <h1 class="step-heading">Step 3 of 4: Payment</h1>
+
+  {
+    methods.length === 0 ? (
+      <div class="checkout-form">
+        <div class="empty-step" role="status">
+          <h2>Payment isn’t available right now</h2>
+          <p>This shop can’t take payments at the moment. Your cart and details are saved, so you can come back and finish later.</p>
+          <a class="button button-secondary" href="/cart">
+            Back to cart
+          </a>
+        </div>
+        <button type="button" class="button" disabled>
+          Review order
+        </button>
+      </div>
+    ) : (
+      <form method="post" class="checkout-form">
+        <fieldset>
+          <legend class="hint">Payment method</legend>
+          <div class="choices">
+            {methods.map((method) => (
+              <>
+                <label class="choice">
+                  <input type="radio" name="providerId" value={method.providerId} checked={method.providerId === selected} required />
+                  <span class="name">{method.name}</span>
+                </label>
+                {method.providerId === 'test' && (
+                  <div class="choice-detail field">
+                    <label for="outcome">Test payments move no money. Choose what happens:</label>
+                    <select id="outcome" name="outcome">
+                      {TEST_OUTCOMES.map((o) => (
+                        <option value={o.value} selected={o.value === outcome}>
+                          {o.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+              </>
+            ))}
+          </div>
+        </fieldset>
+
+        <dl class="recap">
+          <div>
+            <dt>Billing</dt>
+            <dd>{billing}</dd>
+            <a href="/checkout/address">Change<span class="visually-hidden"> billing address</span></a>
+          </div>
+        </dl>
+
+        <div class="step-actions">
+          <button type="submit" class="button">
+            Review order
+          </button>
+          <a href="/checkout/shipping">‹ Back to shipping</a>
+        </div>
+      </form>
+    )
+  }
+</Checkout>

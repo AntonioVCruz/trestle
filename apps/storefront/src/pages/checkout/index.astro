@@ -1,0 +1,8 @@
+---
+import { checkoutRedirect } from '../../lib/checkout-flow.js';
+import { reachableStep } from '../../lib/checkout.js';
+
+// The Checkout button lands here: go to the furthest step the cart has reached.
+const { cart } = Astro.locals;
+return Astro.redirect(checkoutRedirect(cart, 'address') ?? `/checkout/${reachableStep(cart!)}`);
+---

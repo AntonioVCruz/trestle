@@ -1,0 +1,11 @@
+node_modules/
+dist/
+*.tsbuildinfo
+coverage/
+.env
+.env.*
+!.env.example
+.astro/
+
+# Brand drafts from Claude Design: kept local, not part of the repository.
+/Trestle brand identity/

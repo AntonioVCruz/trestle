@@ -1,0 +1,85 @@
+---
+import { isCurrencyLocked } from '../lib/cart.js';
+import { currencyLabel } from '../lib/money.js';
+
+/**
+ * Shown only when the channel sells in more than one currency (wireframe 1b). Locked while the
+ * cart holds anything, with the reason (2a): still focusable and announced, but it offers only
+ * the cart's currency.
+ */
+interface Props {
+  /** Unique per page: the picker appears in the top bar, the mobile menu and the footer. */
+  readonly id: string;
+}
+
+const { id } = Astro.props;
+const { channel, cart, currency, locale } = Astro.locals;
+const locked = isCurrencyLocked(cart);
+const returnTo = Astro.url.pathname + Astro.url.search;
+---
+
+{
+  channel.currencies.length > 1 &&
+    (locked ? (
+      <div class="currency-picker locked">
+        <label for={id}>Currency</label>
+        <select id={id} aria-disabled="true" aria-describedby={`${id}-why`}>
+          <option selected>{currencyLabel(currency, locale)} · locked</option>
+        </select>
+        <p id={`${id}-why`} class="why">
+          Your cart is in {currency}. To shop in another currency, empty your cart first. <a href="/cart">View cart</a>
+        </p>
+      </div>
+    ) : (
+      <form method="post" action="/currency" class="currency-picker">
+        <input type="hidden" name="return" value={returnTo} />
+        <label for={id}>Currency</label>
+        <select id={id} name="currency">
+          {channel.currencies.map((code) => (
+            <option value={code} selected={code === currency}>
+              {currencyLabel(code, locale)}
+            </option>
+          ))}
+        </select>
+        <button type="submit">Change</button>
+      </form>
+    ))
+}
+
+<style>
+  .currency-picker {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-2);
+    font-size: 0.875rem;
+  }
+
+  select,
+  button {
+    font: inherit;
+    min-height: 2.25rem;
+    padding: 0 var(--space-2);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    background: var(--color-bg);
+    color: var(--color-fg);
+  }
+
+  button {
+    cursor: pointer;
+  }
+
+  .locked select {
+    border-style: dashed;
+    color: var(--color-muted);
+    background: var(--color-surface);
+  }
+
+  .why {
+    flex-basis: 100%;
+    max-width: 24rem;
+    margin: 0;
+    font-size: 0.8125rem;
+  }
+</style>

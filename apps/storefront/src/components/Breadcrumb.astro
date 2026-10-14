@@ -1,0 +1,37 @@
+---
+interface Props {
+  /** Root first; the last crumb is the current page and has no link. */
+  readonly trail: readonly { readonly name: string; readonly href?: string }[];
+}
+
+const { trail } = Astro.props;
+---
+
+<nav aria-label="Breadcrumb">
+  <ol role="list">
+    {
+      trail.map((crumb, i) => (
+        <li>
+          {crumb.href && i < trail.length - 1 ? <a href={crumb.href}>{crumb.name}</a> : <span aria-current="page">{crumb.name}</span>}
+        </li>
+      ))
+    }
+  </ol>
+</nav>
+
+<style>
+  ol {
+    display: flex;
+    flex-wrap: wrap;
+    margin: 0;
+    padding: var(--space-4) 0 var(--space-2);
+    list-style: none;
+    font-size: 0.875rem;
+  }
+
+  li + li::before {
+    content: '›';
+    padding-inline: var(--space-2);
+    color: var(--color-muted);
+  }
+</style>

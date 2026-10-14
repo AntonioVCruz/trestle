@@ -1,0 +1,95 @@
+# Local stack: Postgres plus the server image in each process role (ADR 0009), and the
+# reference storefront (ADR 0020). Settings come from a .env file next to this one:
+# ADMIN_API_TOKEN enables the Admin API, TRESTLE_PUBLISHABLE_KEY the storefront.
+# WEB_PORT and STOREFRONT_PORT move the published ports (default 9000 and 4321).
+name: trestle
+
+x-env: &env
+  DATABASE_URL: postgres://trestle:trestle@postgres:5432/trestle
+  LOG_LEVEL: ${LOG_LEVEL:-info}
+  # A local stack: offer the test payment provider unless told otherwise (ADR 0019).
+  ENABLE_TEST_PAYMENT_PROVIDER: ${ENABLE_TEST_PAYMENT_PROVIDER:-true}
+
+x-server: &server
+  build: .
+  image: trestle-server:dev
+  restart: unless-stopped
+  depends_on:
+    migrate:
+      condition: service_completed_successfully
+
+services:
+  postgres:
+    image: postgres:18-alpine
+    environment:
+      POSTGRES_USER: trestle
+      POSTGRES_PASSWORD: trestle
+      POSTGRES_DB: trestle
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U trestle -d trestle"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+  migrate:
+    build: .
+    image: trestle-server:dev
+    command: ["migrate"]
+    environment: *env
+    restart: "no"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  web:
+    <<: *server
+    command: ["web"]
+    environment:
+      <<: *env
+      ADMIN_API_TOKEN: ${ADMIN_API_TOKEN:-}
+    ports:
+      - "${WEB_PORT:-9000}:9000"
+    healthcheck:
+      # 127.0.0.1, not localhost: Alpine resolves localhost to ::1 first, and the server
+      # listens on IPv4, so a localhost check is always refused.
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:9000/health/ready"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  worker:
+    <<: *server
+    command: ["worker"]
+    environment: *env
+
+  scheduler:
+    <<: *server
+    command: ["scheduler"]
+    environment: *env
+
+  # The reference storefront needs a channel's publishable key, which exists only once the
+  # stack is up and seeded, so it is not started by a plain `docker compose up`:
+  #   docker compose up -d && npm run seed     # put the printed key in .env
+  #   docker compose up -d storefront
+  storefront:
+    profiles: [storefront]
+    build:
+      context: .
+      dockerfile: apps/storefront/Dockerfile
+    image: trestle-storefront:dev
+    restart: unless-stopped
+    environment:
+      TRESTLE_API_URL: http://web:9000
+      TRESTLE_PUBLISHABLE_KEY: ${TRESTLE_PUBLISHABLE_KEY:-}
+    ports:
+      - "${STOREFRONT_PORT:-4321}:4321"
+    depends_on:
+      web:
+        condition: service_healthy
+
+volumes:
+  pgdata:

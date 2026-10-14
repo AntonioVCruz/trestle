@@ -1,0 +1,81 @@
+---
+import ProductGrid from '../components/ProductGrid.astro';
+import Base from '../layouts/Base.astro';
+import { listProducts } from '../lib/store-api.js';
+
+// Home (wireframes 1a, 1c). The hero, category images and promo strip are planned channel content.
+const { channel, categories, currency } = Astro.locals;
+const arrivals = await listProducts({ currency, limit: 4 });
+---
+
+<Base>
+  <h1 class="visually-hidden">{channel.name}</h1>
+
+  {
+    categories.length > 0 && (
+      <section class="container page-section" aria-labelledby="shop-by-category">
+        <div class="section-heading">
+          <h2 id="shop-by-category">Shop by category</h2>
+        </div>
+        <ul role="list" class="categories">
+          {categories.map((category) => (
+            <li>
+              <a href={`/categories/${category.handle}`}>
+                <span class="placeholder-image" aria-hidden="true" />
+                {category.name}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </section>
+    )
+  }
+
+  <section class="container page-section" aria-labelledby="new-arrivals">
+    <div class="section-heading">
+      <h2 id="new-arrivals">New arrivals</h2>
+      <a href="/products">View all<span class="visually-hidden"> new arrivals</span></a>
+    </div>
+    {
+      arrivals.data.length > 0 ? (
+        <ProductGrid products={arrivals.data} nextCursor={null} pageSize={4} />
+      ) : (
+        <p>No products yet. Check back soon.</p>
+      )
+    }
+  </section>
+</Base>
+
+<style>
+  /* Horizontal scroll on small screens, a row of four on wide ones (1a, 1c). */
+  .categories {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(9rem, 40%);
+    gap: var(--space-4);
+    margin: 0;
+    padding: 0 0 var(--space-2);
+    overflow-x: auto;
+    list-style: none;
+  }
+
+  @media (min-width: 900px) {
+    .categories {
+      grid-auto-flow: row;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      overflow: visible;
+    }
+  }
+
+  .categories a {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    font-size: 1.0625rem;
+    text-decoration: none;
+  }
+
+  .categories .placeholder-image {
+    aspect-ratio: 9 / 7;
+  }
+</style>

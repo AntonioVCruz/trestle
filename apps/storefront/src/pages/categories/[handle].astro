@@ -1,0 +1,29 @@
+---
+import ListingPage from '../../components/ListingPage.astro';
+import { categoryPath, flattenTree } from '../../lib/categories.js';
+import { loadListingPage } from '../../lib/store-api.js';
+
+const PAGE_SIZE = 12;
+
+// Category pages (1d, 1e, 1g). The category, its breadcrumb and its chips all come from the tree
+// the middleware already loaded; only the products need a call.
+const { categories } = Astro.locals;
+const category = flattenTree(categories).find((c) => c.handle === Astro.params.handle);
+if (!category) return Astro.rewrite('/404');
+
+const page = await loadListingPage(Astro.url, { currency: Astro.locals.currency, limit: PAGE_SIZE, category: category.handle });
+if (!page) return Astro.redirect(Astro.url.pathname);
+
+const path = categoryPath(categories, category.id);
+const parent = path.at(-2);
+---
+
+<ListingPage
+  title={category.name}
+  page={page}
+  pageSize={PAGE_SIZE}
+  trail={[{ name: 'Home', href: '/' }, ...path.map((c) => ({ name: c.name, href: `/categories/${c.handle}` }))]}
+  category={category.handle}
+  children={category.children}
+  parent={parent}
+/>

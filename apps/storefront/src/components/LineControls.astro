@@ -1,0 +1,115 @@
+---
+import { lineTitle } from '../lib/cart.js';
+import type { CartLine } from '../lib/types.js';
+
+/**
+ * A cart line's quantity stepper and Remove button: plain forms, so they work without
+ * JavaScript. `enhanced` lets the drawer script post them and swap in the result; `data-focus`
+ * names each control so focus can return to it afterwards.
+ */
+interface Props {
+  readonly line: CartLine;
+  /** Where to come back to after the change. */
+  readonly returnTo: string;
+  readonly enhanced?: boolean;
+}
+
+const MAX_QUANTITY = 1000;
+
+const { line, returnTo, enhanced = false } = Astro.props;
+const title = lineTitle(line);
+const action = `/cart/lines/${line.id}`;
+---
+
+<div class="controls">
+  {
+    line.available && (
+      <form method="post" action={action} class="stepper" data-cart-form={enhanced ? '' : undefined}>
+        <input type="hidden" name="return" value={returnTo} />
+        <button
+          type="submit"
+          name="quantity"
+          value={line.quantity - 1}
+          disabled={line.quantity <= 1}
+          aria-label={`Decrease quantity of ${title}`}
+          data-focus={`${line.id}:dec`}
+        >
+          −
+        </button>
+        <span class="quantity">
+          <span class="visually-hidden">Quantity of {title}: </span>
+          {line.quantity}
+        </span>
+        <button
+          type="submit"
+          name="quantity"
+          value={line.quantity + 1}
+          disabled={line.quantity >= MAX_QUANTITY}
+          aria-label={`Increase quantity of ${title}`}
+          data-focus={`${line.id}:inc`}
+        >
+          +
+        </button>
+      </form>
+    )
+  }
+  <form method="post" action={action} data-cart-form={enhanced ? '' : undefined}>
+    <input type="hidden" name="return" value={returnTo} />
+    <button type="submit" name="remove" value="1" class:list={['remove', { prominent: !line.available }]} data-focus={`${line.id}:remove`}>
+      Remove<span class="visually-hidden"> {title}</span>
+    </button>
+  </form>
+</div>
+
+<style>
+  .controls {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-3);
+  }
+
+  .stepper {
+    display: inline-flex;
+    align-items: center;
+    border: 1px solid var(--color-fg);
+    border-radius: var(--radius);
+  }
+
+  .stepper button {
+    width: 2.75rem;
+    height: 2.75rem;
+    border: 0;
+    background: none;
+    font: inherit;
+    font-size: 1.125rem;
+    cursor: pointer;
+  }
+
+  .stepper button:disabled {
+    color: var(--color-border);
+    cursor: default;
+  }
+
+  .quantity {
+    min-width: 2rem;
+    text-align: center;
+  }
+
+  .remove {
+    padding: 0;
+    border: 0;
+    background: none;
+    font: inherit;
+    text-decoration: underline;
+    cursor: pointer;
+  }
+
+  .remove.prominent {
+    min-height: 2.75rem;
+    padding: 0 var(--space-4);
+    border: 1px solid var(--color-fg);
+    border-radius: var(--radius);
+    text-decoration: none;
+  }
+</style>

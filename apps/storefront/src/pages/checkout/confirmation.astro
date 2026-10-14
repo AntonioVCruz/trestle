@@ -1,0 +1,192 @@
+---
+import Base from '../../layouts/Base.astro';
+import { ORDER_COOKIE } from '../../lib/cart-session.js';
+import { lineTitle } from '../../lib/cart.js';
+import { addressLines } from '../../lib/checkout.js';
+import { formatMoney } from '../../lib/money.js';
+import { getOrder } from '../../lib/store-api.js';
+
+/**
+ * Order confirmation (1x). The order id is the shopper's key to it, so it comes from an
+ * HTTP-only cookie, never the URL. Order emails are not built yet, so the page doesn't claim one
+ * was sent; the Store API order has no payment details, so there is no payment row either.
+ */
+const orderId = Astro.cookies.get(ORDER_COOKIE)?.value;
+const order = orderId ? await getOrder(orderId) : null;
+if (!order) return Astro.redirect('/');
+
+const { locale } = Astro.locals;
+const format = (amount: number) => formatMoney(amount, order.currency, locale);
+const adjustments = order.adjustments.filter((a) => !a.included);
+---
+
+<Base title={`Order #${order.number}`}>
+  <div class="container confirmation">
+    <div class="head">
+      <span class="tick" aria-hidden="true">✓</span>
+      <h1>Thanks, {order.shippingAddress.firstName}!</h1>
+      <p class="number">Order #{order.number}</p>
+      <p class="muted">We’ll send updates about this order to {order.email}.</p>
+    </div>
+
+    <section class="card" aria-labelledby="items-title">
+      <h2 id="items-title" class="visually-hidden">Items</h2>
+      <ul role="list" class="lines">
+        {
+          order.lines.map((line) => (
+            <li>
+              <div class="placeholder-image thumb" aria-hidden="true" />
+              <div class="info">
+                <span>{lineTitle(line)}</span>
+                <span class="muted">Qty {line.quantity}</span>
+              </div>
+              <span>{format(line.total)}</span>
+            </li>
+          ))
+        }
+      </ul>
+      <dl>
+        <div>
+          <dt>Subtotal</dt>
+          <dd>{format(order.subtotal)}</dd>
+        </div>
+        {
+          adjustments.map((a) => (
+            <div>
+              <dt>{a.kind === 'shipping' ? 'Shipping' : a.label}</dt>
+              <dd>{format(a.amount)}</dd>
+            </div>
+          ))
+        }
+        <div class="total">
+          <dt>Total</dt>
+          <dd>{format(order.total)} {order.currency}</dd>
+        </div>
+      </dl>
+    </section>
+
+    <dl class="details">
+      <div>
+        <dt>Shipping to</dt>
+        <dd>{addressLines(order.shippingAddress).join(', ')}</dd>
+      </div>
+      <div>
+        <dt>Method</dt>
+        <dd>{order.shippingMethod.name}</dd>
+      </div>
+    </dl>
+
+    <a class="button" href="/products">Continue shopping</a>
+  </div>
+</Base>
+
+<style>
+  .confirmation {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-6);
+    max-width: 36rem;
+    padding-block: var(--space-8);
+  }
+
+  .head {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-2);
+    text-align: center;
+  }
+
+  .tick {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 3.5rem;
+    height: 3.5rem;
+    border: 2px solid var(--color-fg);
+    border-radius: 50%;
+    font-size: 1.75rem;
+  }
+
+  h1 {
+    font-size: 1.75rem;
+    font-weight: 500;
+  }
+
+  p {
+    margin: 0;
+  }
+
+  .number {
+    font-size: 1.125rem;
+    font-weight: 600;
+  }
+
+  .muted {
+    color: var(--color-muted);
+    font-size: 0.875rem;
+  }
+
+  .card {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    padding: var(--space-4);
+    border: 1px solid var(--color-fg);
+    border-radius: var(--radius);
+  }
+
+  .lines {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    margin: 0;
+    padding: 0 0 var(--space-4);
+    list-style: none;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .lines li {
+    display: grid;
+    grid-template-columns: 3.5rem 1fr auto;
+    gap: var(--space-3);
+    align-items: center;
+  }
+
+  .thumb {
+    aspect-ratio: 1;
+  }
+
+  .info {
+    display: flex;
+    flex-direction: column;
+  }
+
+  dl {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    margin: 0;
+  }
+
+  .card dl div {
+    display: flex;
+    justify-content: space-between;
+  }
+
+  dd {
+    margin: 0;
+  }
+
+  .total {
+    padding-top: var(--space-3);
+    border-top: 1px solid var(--color-border);
+    font-size: 1.125rem;
+    font-weight: 600;
+  }
+
+  .details dt {
+    font-size: 0.875rem;
+    color: var(--color-muted);
+  }
+</style>

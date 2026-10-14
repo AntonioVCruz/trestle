@@ -1,0 +1,137 @@
+@import './tokens.css';
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-body);
+  line-height: 1.5;
+  color: var(--color-fg);
+  background: var(--color-bg);
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+main {
+  flex: 1;
+  /* Otherwise wide content, like a scrolling row, stretches the page past the screen. */
+  min-width: 0;
+}
+
+a {
+  color: inherit;
+}
+
+/* Components set display on their own elements; `hidden` must still win. */
+[hidden] {
+  display: none !important;
+}
+
+h1,
+h2,
+h3 {
+  line-height: 1.2;
+  margin: 0;
+}
+
+/* The focus ring is never removed (wireframe 1l). */
+:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: 2px;
+}
+
+.container {
+  width: 100%;
+  max-width: var(--content-width);
+  margin-inline: auto;
+  padding-inline: var(--space-4);
+}
+
+.visually-hidden {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.skip-link {
+  position: absolute;
+  left: var(--space-4);
+  top: -10rem;
+  z-index: 10;
+  padding: var(--space-2) var(--space-4);
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+}
+
+.skip-link:focus {
+  top: var(--space-2);
+}
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: 2.75rem;
+  padding: var(--space-2) var(--space-6);
+  border: 1px solid var(--color-accent);
+  border-radius: var(--radius);
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+  font: inherit;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.button-secondary {
+  background: var(--color-bg);
+  color: var(--color-fg);
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.5rem;
+  padding: var(--space-1) var(--space-4);
+  border: 1px solid var(--color-fg);
+  border-radius: var(--radius);
+  text-decoration: none;
+}
+
+.placeholder-image {
+  background: repeating-linear-gradient(135deg, var(--color-placeholder) 0 12px, var(--color-surface) 12px 24px);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+}
+
+.page-section {
+  padding-block: var(--space-8);
+}
+
+.section-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-4);
+  margin-bottom: var(--space-4);
+}
+
+.section-heading h2 {
+  font-size: 1.375rem;
+  font-weight: 500;
+}

@@ -1,0 +1,90 @@
+---
+import ContactRecap from '../../components/checkout/ContactRecap.astro';
+import Checkout from '../../layouts/Checkout.astro';
+import { checkoutRedirect } from '../../lib/checkout-flow.js';
+import { addressLines, checkoutErrorMessage } from '../../lib/checkout.js';
+import { formatMoney } from '../../lib/money.js';
+import { listShippingOptions, selectShippingMethod } from '../../lib/store-api.js';
+
+/**
+ * Step 2 (1s): always shown, since every cart ships (ADR 0016). The options depend on the
+ * address; changing it drops the method, and the previous choice is pre-selected if still
+ * offered. No options for the address is 3f.
+ */
+const { cart, locale } = Astro.locals;
+const away = checkoutRedirect(cart, 'shipping');
+if (away) return Astro.redirect(away);
+
+let error = Astro.url.searchParams.get('error');
+let selected = cart!.shippingMethod?.optionId ?? null;
+
+if (Astro.request.method === 'POST') {
+  const form = await Astro.request.formData();
+  const optionId = form.get('optionId');
+  if (typeof optionId === 'string' && optionId !== '') {
+    const result = await selectShippingMethod(cart!.id, optionId);
+    if (result.ok) return Astro.redirect('/checkout/payment', 303);
+    error = result.code;
+    selected = optionId;
+  } else {
+    error = 'no_option_chosen';
+  }
+  Astro.response.status = 400;
+}
+
+const options = await listShippingOptions(cart!.id);
+if (!options.some((o) => o.optionId === selected)) selected = options[0]?.optionId ?? null;
+const message = error === 'no_option_chosen' ? { title: 'Choose how to get your order', body: 'Pick one of the options below.' } : error && checkoutErrorMessage(error);
+---
+
+<Checkout title="Shipping" step="shipping">
+  <ContactRecap />
+  <h1 class="step-heading">Step 2 of 4: Shipping method</h1>
+
+  {
+    message && (
+      <div class="banner" role="alert" tabindex="-1" data-focus-on-load>
+        <p class="title">{message.title}</p>
+        <p>{message.body}</p>
+      </div>
+    )
+  }
+
+  {
+    options.length === 0 ? (
+      <div class="checkout-form">
+        <div class="empty-step" role="status">
+          <h2>We can’t deliver to this address</h2>
+          <p>There are no shipping options for {addressLines(cart!.shippingAddress!).slice(1).join(', ')}. Check the address or try a different one.</p>
+          <a class="button" href="/checkout/address">
+            Edit address
+          </a>
+        </div>
+        <button type="button" class="button" disabled>
+          Continue to payment
+        </button>
+      </div>
+    ) : (
+      <form method="post" class="checkout-form">
+        <fieldset>
+          <legend class="hint">Choose how to get it</legend>
+          <div class="choices">
+            {options.map((option) => (
+              <label class="choice">
+                <input type="radio" name="optionId" value={option.optionId} checked={option.optionId === selected} required />
+                <span class="name">{option.name}</span>
+                <span>{option.amount === 0 ? 'Free' : formatMoney(option.amount, cart!.currency, locale)}</span>
+              </label>
+            ))}
+          </div>
+        </fieldset>
+        <div class="step-actions">
+          <button type="submit" class="button">
+            Continue to payment
+          </button>
+          <a href="/checkout/address">‹ Back to address</a>
+        </div>
+      </form>
+    )
+  }
+</Checkout>

@@ -1,0 +1,137 @@
+---
+import type { Product } from '../lib/types.js';
+import ProductCard from './ProductCard.astro';
+
+/**
+ * A product listing with "Load more" (ADR 0013): the cursor goes back as `after`, and the button
+ * disappears once `nextCursor` is null. Without JavaScript the button is a link to the next page;
+ * with it, the next page is appended in place and the first new product gets focus (1d).
+ */
+interface Props {
+  readonly products: readonly Product[];
+  readonly nextCursor: string | null;
+  readonly pageSize: number;
+  /** Category handle, when listing one category. */
+  readonly category?: string;
+}
+
+const { products, nextCursor, pageSize, category } = Astro.props;
+
+const nextPageHref = (cursor: string) => `${Astro.url.pathname}?${new URLSearchParams({ after: cursor })}`;
+const fragmentHref = (cursor: string) =>
+  `/fragments/products?${new URLSearchParams({ ...(category ? { category } : {}), limit: String(pageSize), after: cursor })}`;
+---
+
+<div class="product-grid" data-product-grid>
+  <ul role="list" class="grid">
+    {
+      products.map((product) => (
+        <li>
+          <ProductCard product={product} />
+        </li>
+      ))
+    }
+  </ul>
+  {
+    nextCursor && (
+      <a class="button button-secondary load-more" href={nextPageHref(nextCursor)} data-fragment={fragmentHref(nextCursor)} data-load-more>
+        Load more
+      </a>
+    )
+  }
+  <p class="visually-hidden" aria-live="polite" data-status></p>
+</div>
+
+<script>
+  for (const grid of document.querySelectorAll<HTMLElement>('[data-product-grid]')) {
+    const list = grid.querySelector('ul')!;
+    const status = grid.querySelector('[data-status]')!;
+    const more = grid.querySelector<HTMLAnchorElement>('[data-load-more]');
+
+    more?.addEventListener('click', async (event) => {
+      event.preventDefault();
+      if (list.getAttribute('aria-busy') === 'true') return;
+      list.setAttribute('aria-busy', 'true');
+      // Loading skeleton (1f) while the next page arrives.
+      const skeletons = Array.from({ length: 4 }, () => {
+        const item = document.createElement('li');
+        item.className = 'skeleton';
+        item.setAttribute('aria-hidden', 'true');
+        return item;
+      });
+      list.append(...skeletons);
+      try {
+        const response = await fetch(more.dataset.fragment!);
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const page = new DOMParser().parseFromString(await response.text(), 'text/html').querySelector<HTMLElement>('[data-page]');
+        if (!page) throw new Error('No product page in the response');
+        const items = [...page.children];
+        skeletons.forEach((s) => s.remove());
+        list.append(...items);
+        items[0]?.querySelector('a')?.focus();
+        status.textContent = `${items.length} more products loaded`;
+
+        const cursor = page.dataset.nextCursor;
+        if (!cursor) {
+          more.remove();
+        } else {
+          const fragment = new URL(more.dataset.fragment!, location.href);
+          fragment.searchParams.set('after', cursor);
+          more.dataset.fragment = fragment.pathname + fragment.search;
+          const next = new URL(more.href);
+          next.searchParams.set('after', cursor);
+          more.href = next.href;
+        }
+      } catch {
+        // Fall back to the page the link points at.
+        location.assign(more.href);
+      } finally {
+        skeletons.forEach((s) => s.remove());
+        list.removeAttribute('aria-busy');
+      }
+    });
+  }
+</script>
+
+<style>
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-6) var(--space-4);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  @media (min-width: 900px) {
+    .grid {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: var(--space-8) var(--space-6);
+    }
+  }
+
+  .grid :global(.skeleton) {
+    aspect-ratio: 4 / 6;
+    border-radius: var(--radius);
+    background: var(--color-placeholder);
+    animation: pulse 1.2s ease-in-out infinite alternate;
+  }
+
+  @keyframes pulse {
+    to {
+      opacity: 0.5;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .grid :global(.skeleton) {
+      animation: none;
+    }
+  }
+
+  .load-more {
+    display: flex;
+    width: min(100%, 18rem);
+    margin: var(--space-8) auto 0;
+  }
+</style>

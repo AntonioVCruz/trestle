@@ -1,0 +1,37 @@
+{
+  "name": "trestle",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "API-first, open-source commerce platform: modular core, separate Store and Admin APIs, typed extension contract.",
+  "license": "MIT",
+  "engines": {
+    "node": ">=22"
+  },
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "build": "tsc -b && npm run build -w @trestle/storefront",
+    "clean": "tsc -b --clean",
+    "typecheck": "tsc -p tsconfig.typecheck.json && npm run check -w @trestle/storefront",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "dev": "tsx watch --conditions=source --env-file-if-exists=.env apps/server/src/main.ts web",
+    "worker": "tsx --conditions=source --env-file-if-exists=.env apps/server/src/main.ts worker",
+    "scheduler": "tsx --conditions=source --env-file-if-exists=.env apps/server/src/main.ts scheduler",
+    "migrate": "tsx --conditions=source --env-file-if-exists=.env apps/server/src/main.ts migrate",
+    "storefront": "npm run dev -w @trestle/storefront",
+    "seed": "tsx --conditions=source --env-file-if-exists=.env apps/storefront/scripts/seed.ts",
+    "generate": "tsx --conditions=source apps/server/src/main.ts openapi openapi && npm run generate -w @trestle/sdk"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.5",
+    "@types/pg": "^8.23.1",
+    "openapi-typescript": "^7.13.0",
+    "tsx": "^4.23.15",
+    "typescript": "^5.9.3",
+    "vitest": "^5.0.3"
+  }
+}

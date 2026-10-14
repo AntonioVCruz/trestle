@@ -1,0 +1,64 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:18-alpine
+        env:
+          POSTGRES_USER: trestle
+          POSTGRES_PASSWORD: trestle
+          POSTGRES_DB: trestle
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U trestle -d trestle"
+          --health-interval 2s
+          --health-timeout 3s
+          --health-retries 30
+    env:
+      TEST_DATABASE_URL: postgres://trestle:trestle@localhost:5432/trestle
+      ASTRO_TELEMETRY_DISABLED: 1
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+      - name: OpenAPI documents and SDK types are up to date
+        run: |
+          npm run generate
+          git diff --exit-code -- openapi packages/sdk/src/generated
+
+  image:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Compose file is valid, with and without the storefront
+        run: |
+          docker compose config --quiet
+          docker compose --profile storefront config --quiet
+      - run: docker build -t trestle-server:ci .
+      - run: docker build -f apps/storefront/Dockerfile -t trestle-storefront:ci .
+      - name: Storefront refuses to start without a publishable key
+        run: |
+          if docker run --rm trestle-storefront:ci; then exit 1; fi
+      - name: Storefront container becomes healthy
+        run: |
+          docker run -d --name storefront -e TRESTLE_PUBLISHABLE_KEY=pk_ci trestle-storefront:ci
+          for i in $(seq 1 30); do
+            [ "$(docker inspect --format '{{.State.Health.Status}}' storefront)" = healthy ] && exit 0
+            sleep 1
+          done
+          docker logs storefront
+          exit 1

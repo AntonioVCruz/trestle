@@ -1,0 +1,52 @@
+---
+import { summarizePrice } from '../lib/prices.js';
+import type { Product } from '../lib/types.js';
+import PriceTag from './PriceTag.astro';
+
+// Images and stock badges ("New", "Low stock") wait for media and inventory (wireframe 1a).
+interface Props {
+  readonly product: Product;
+}
+
+const { product } = Astro.props;
+---
+
+<article class="card">
+  <div class="placeholder-image image" aria-hidden="true"></div>
+  <h3><a href={`/products/${product.handle}`}>{product.title}</a></h3>
+  <PriceTag summary={summarizePrice(product)} compact />
+</article>
+
+<style>
+  .card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+  }
+
+  .image {
+    aspect-ratio: 4 / 5;
+    margin-bottom: var(--space-2);
+  }
+
+  h3 {
+    font-size: 1rem;
+    font-weight: 500;
+  }
+
+  /* The whole card is clickable through the title link. */
+  a {
+    text-decoration: none;
+  }
+
+  a::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+  }
+
+  a:hover {
+    text-decoration: underline;
+  }
+</style>

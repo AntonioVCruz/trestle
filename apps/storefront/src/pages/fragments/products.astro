@@ -1,0 +1,26 @@
+---
+import ProductCard from '../../components/ProductCard.astro';
+import { loadListingPage } from '../../lib/store-api.js';
+
+/** The next page of a listing as bare list items, for "Load more" (see ProductGrid). */
+export const partial = true;
+
+const search = Astro.url.searchParams;
+const page = await loadListingPage(Astro.url, {
+  currency: Astro.locals.currency,
+  limit: Math.min(Math.max(Number(search.get('limit')) || 12, 1), 100),
+  category: search.get('category') ?? undefined,
+});
+// A rejected cursor: the script falls back to the Load more link, which restarts the listing.
+if (!page) return new Response(null, { status: 400 });
+---
+
+<ul data-page data-next-cursor={page.nextCursor ?? ''}>
+  {
+    page.data.map((product) => (
+      <li>
+        <ProductCard product={product} />
+      </li>
+    ))
+  }
+</ul>

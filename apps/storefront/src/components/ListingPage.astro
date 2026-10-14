@@ -1,0 +1,139 @@
+---
+import Base from '../layouts/Base.astro';
+import type { ProductListing } from '../lib/store-api.js';
+import Breadcrumb from './Breadcrumb.astro';
+import ProductGrid from './ProductGrid.astro';
+
+/** A paged listing: every product, or one category's (wireframes 1d, 1e, 1g). */
+interface Props {
+  readonly title: string;
+  /** Loaded by the page with `loadListingPage`, so it can redirect a bad cursor first. */
+  readonly page: ProductListing;
+  readonly pageSize: number;
+  readonly trail: readonly { readonly name: string; readonly href?: string }[];
+  /** Category handle, when listing one category. */
+  readonly category?: string;
+  /** Subcategories, shown as chips. */
+  readonly children?: readonly { readonly name: string; readonly handle: string }[];
+  /** Where "Back to …" leads from an empty category. */
+  readonly parent?: { readonly name: string; readonly handle: string } | undefined;
+}
+
+const { title, page, pageSize, trail, category, children = [], parent } = Astro.props;
+// Without JavaScript, "Load more" opens the next page on its own (see ProductGrid).
+const after = Astro.url.searchParams.get('after');
+---
+
+<Base title={title}>
+  <div class="container">
+    <Breadcrumb trail={trail} />
+    <div class="heading">
+      <h1>{title}</h1>
+      {
+        children.length > 0 && (
+          <ul role="list" class="chips" aria-label={`Categories in ${title}`}>
+            {children.map((child) => (
+              <li>
+                <a class="chip" href={`/categories/${child.handle}`}>
+                  {child.name}
+                </a>
+              </li>
+            ))}
+          </ul>
+        )
+      }
+      {page.data.length > 0 && <p class="sort">Newest first</p>}
+    </div>
+
+    {
+      page.data.length > 0 ? (
+        <>
+          {after && (
+            <p class="continued">
+              More from {title}. <a href={Astro.url.pathname}>Back to the start</a>
+            </p>
+          )}
+          <ProductGrid products={page.data} nextCursor={page.nextCursor} pageSize={pageSize} category={category} />
+        </>
+      ) : (
+        <div class="empty">
+          <h2>Nothing here yet</h2>
+          <p>New pieces land often. Check back soon, or browse the rest of the shop.</p>
+          <a class="button" href="/products">
+            Browse new arrivals
+          </a>
+          {parent && <a href={`/categories/${parent.handle}`}>Back to {parent.name}</a>}
+        </div>
+      )
+    }
+  </div>
+</Base>
+
+<style>
+  .heading {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-3) var(--space-6);
+    margin-bottom: var(--space-6);
+  }
+
+  h1 {
+    font-size: 2rem;
+    font-weight: 500;
+  }
+
+  .chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .sort {
+    flex-basis: 100%;
+    margin: 0;
+    font-size: 0.875rem;
+    color: var(--color-muted);
+  }
+
+  @media (min-width: 900px) {
+    .sort {
+      flex-basis: auto;
+      margin-left: auto;
+    }
+  }
+
+  .continued {
+    margin-top: 0;
+  }
+
+  .empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-4);
+    max-width: 32rem;
+    margin: var(--space-8) auto;
+    padding: var(--space-8) var(--space-6);
+    border: 1px dashed var(--color-muted);
+    border-radius: var(--radius);
+    text-align: center;
+  }
+
+  .empty h2 {
+    font-size: 1.375rem;
+    font-weight: 500;
+  }
+
+  .empty p {
+    margin: 0;
+    color: var(--color-muted);
+  }
+
+  .empty .button {
+    align-self: stretch;
+  }
+</style>

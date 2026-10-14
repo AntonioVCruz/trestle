@@ -1,0 +1,3859 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Trestle Store API",
+    "version": "1.0.0"
+  },
+  "components": {
+    "securitySchemes": {
+      "publishableKey": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "x-publishable-key"
+      }
+    },
+    "schemas": {
+      "Error": {
+        "type": "object",
+        "required": [
+          "error"
+        ],
+        "properties": {
+          "error": {
+            "type": "object",
+            "required": [
+              "code",
+              "message"
+            ],
+            "properties": {
+              "code": {
+                "type": "string"
+              },
+              "message": {
+                "type": "string"
+              },
+              "details": {
+                "type": "object",
+                "description": "Extra data for some codes, e.g. clientData",
+                "additionalProperties": {}
+              }
+            }
+          }
+        }
+      },
+      "StoreChannel": {
+        "type": "object",
+        "required": [
+          "code",
+          "name",
+          "defaultCurrency",
+          "currencies",
+          "defaultLocale",
+          "locales"
+        ],
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "defaultCurrency": {
+            "type": "string"
+          },
+          "currencies": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "defaultLocale": {
+            "type": "string"
+          },
+          "locales": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "StorePrice": {
+        "type": "object",
+        "required": [
+          "amount",
+          "currency",
+          "originalAmount"
+        ],
+        "properties": {
+          "amount": {
+            "type": "integer",
+            "description": "Minor units, e.g. cents"
+          },
+          "currency": {
+            "type": "string"
+          },
+          "originalAmount": {
+            "description": "The regular price when a sale undercuts it, for \"was\" displays",
+            "type": "integer",
+            "nullable": true
+          }
+        }
+      },
+      "StoreProductOption": {
+        "type": "object",
+        "required": [
+          "name",
+          "values"
+        ],
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "values": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "StoreVariant": {
+        "type": "object",
+        "required": [
+          "id",
+          "sku",
+          "title",
+          "options",
+          "price"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Refer to this id when adding the variant to a cart"
+          },
+          "sku": {
+            "type": "string",
+            "nullable": true
+          },
+          "title": {
+            "type": "string"
+          },
+          "options": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "name",
+                "value"
+              ],
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "value": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "price": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/StorePrice"
+              },
+              {
+                "type": "object",
+                "nullable": true,
+                "enum": [
+                  null
+                ]
+              }
+            ],
+            "description": "Unit price for a quantity of one, now; null when the variant has no price in this currency"
+          }
+        }
+      },
+      "StoreProduct": {
+        "type": "object",
+        "required": [
+          "id",
+          "handle",
+          "title",
+          "description",
+          "options",
+          "variants",
+          "categoryIds"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "handle": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "options": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StoreProductOption"
+            }
+          },
+          "variants": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StoreVariant"
+            }
+          },
+          "categoryIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "StoreProductPage": {
+        "type": "object",
+        "required": [
+          "data",
+          "nextCursor"
+        ],
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StoreProduct"
+            }
+          },
+          "nextCursor": {
+            "description": "Pass as `after` for the next page",
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "StoreCategory": {
+        "type": "object",
+        "required": [
+          "id",
+          "parentId",
+          "handle",
+          "name",
+          "position"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "parentId": {
+            "type": "string",
+            "nullable": true
+          },
+          "handle": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "position": {
+            "type": "integer"
+          }
+        }
+      },
+      "StoreCategoryList": {
+        "type": "object",
+        "required": [
+          "data"
+        ],
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StoreCategory"
+            }
+          }
+        }
+      },
+      "StoreCartLine": {
+        "type": "object",
+        "required": [
+          "id",
+          "variantId",
+          "productId",
+          "productHandle",
+          "productTitle",
+          "variantTitle",
+          "sku",
+          "quantity",
+          "unitPrice",
+          "originalUnitPrice",
+          "subtotal",
+          "total",
+          "available"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "variantId": {
+            "type": "string"
+          },
+          "productId": {
+            "type": "string"
+          },
+          "productHandle": {
+            "type": "string"
+          },
+          "productTitle": {
+            "type": "string"
+          },
+          "variantTitle": {
+            "type": "string"
+          },
+          "sku": {
+            "type": "string",
+            "nullable": true
+          },
+          "quantity": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "unitPrice": {
+            "type": "integer",
+            "description": "Minor units, in the cart currency"
+          },
+          "originalUnitPrice": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "description": "Minor units, in the cart currency"
+              },
+              {
+                "type": "object",
+                "nullable": true,
+                "enum": [
+                  null
+                ]
+              }
+            ],
+            "description": "The regular price during a sale"
+          },
+          "subtotal": {
+            "type": "integer",
+            "description": "Minor units, in the cart currency"
+          },
+          "total": {
+            "type": "integer",
+            "description": "Minor units, in the cart currency"
+          },
+          "available": {
+            "type": "boolean",
+            "description": "False when the variant can no longer be bought; the line is left out of the totals"
+          }
+        }
+      },
+      "StoreCart": {
+        "type": "object",
+        "required": [
+          "id",
+          "currency",
+          "lines",
+          "subtotal",
+          "adjustments",
+          "total",
+          "itemCount",
+          "checkoutState",
+          "email",
+          "shippingAddress",
+          "billingAddress",
+          "shippingMethod",
+          "paymentMethod",
+          "orderId"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Keep it private: anyone with the id can read and change the cart"
+          },
+          "currency": {
+            "type": "string"
+          },
+          "lines": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StoreCartLine"
+            }
+          },
+          "subtotal": {
+            "type": "integer",
+            "description": "Minor units, in the cart currency"
+          },
+          "adjustments": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "kind",
+                "label",
+                "amount",
+                "lineId",
+                "included"
+              ],
+              "properties": {
+                "kind": {
+                  "type": "string",
+                  "description": "e.g. promotion, shipping, tax"
+                },
+                "label": {
+                  "type": "string"
+                },
+                "amount": {
+                  "type": "integer",
+                  "description": "Signed minor units: discounts are negative"
+                },
+                "lineId": {
+                  "description": "Null for order-level adjustments",
+                  "type": "string",
+                  "nullable": true
+                },
+                "included": {
+                  "type": "boolean",
+                  "description": "Already contained in prices (e.g. included VAT); not added to the total"
+                }
+              }
+            }
+          },
+          "total": {
+            "type": "integer",
+            "description": "Minor units, in the cart currency"
+          },
+          "itemCount": {
+            "type": "integer",
+            "description": "Units across available lines"
+          },
+          "checkoutState": {
+            "enum": [
+              "cart",
+              "addressed",
+              "shipping_selected",
+              "payment_selected",
+              "completing",
+              "placed"
+            ],
+            "description": "The checkout step the cart has reached"
+          },
+          "email": {
+            "type": "string",
+            "nullable": true
+          },
+          "shippingAddress": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/StoreAddress"
+              },
+              {
+                "type": "object",
+                "nullable": true,
+                "enum": [
+                  null
+                ]
+              }
+            ]
+          },
+          "billingAddress": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/StoreAddress"
+              },
+              {
+                "type": "object",
+                "nullable": true,
+                "enum": [
+                  null
+                ]
+              }
+            ]
+          },
+          "shippingMethod": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/StoreShippingQuote"
+              },
+              {
+                "type": "object",
+                "nullable": true,
+                "enum": [
+                  null
+                ]
+              }
+            ]
+          },
+          "paymentMethod": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/StoreSelectedPayment"
+              },
+              {
+                "type": "object",
+                "nullable": true,
+                "enum": [
+                  null
+                ]
+              }
+            ],
+            "description": "Dropped automatically when the cart total changes"
+          },
+          "orderId": {
+            "description": "The order the cart became, once checkoutState is placed; read it with GET /orders/{id}",
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "CreateCart": {
+        "type": "object",
+        "properties": {
+          "currency": {
+            "type": "string",
+            "pattern": "^[A-Z]{3}$",
+            "description": "One of the channel's currencies; defaults to its default currency"
+          }
+        },
+        "additionalProperties": false
+      },
+      "AddCartLine": {
+        "type": "object",
+        "required": [
+          "variantId",
+          "quantity"
+        ],
+        "properties": {
+          "variantId": {
+            "type": "string"
+          },
+          "quantity": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 1000
+          }
+        },
+        "additionalProperties": false
+      },
+      "UpdateCartLine": {
+        "type": "object",
+        "required": [
+          "quantity"
+        ],
+        "properties": {
+          "quantity": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 1000
+          }
+        },
+        "additionalProperties": false
+      },
+      "StoreAddress": {
+        "type": "object",
+        "required": [
+          "firstName",
+          "lastName",
+          "company",
+          "line1",
+          "line2",
+          "city",
+          "postalCode",
+          "region",
+          "country",
+          "phone"
+        ],
+        "properties": {
+          "firstName": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "lastName": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "company": {
+            "type": "string",
+            "nullable": true
+          },
+          "line1": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "line2": {
+            "type": "string",
+            "nullable": true
+          },
+          "city": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "postalCode": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "region": {
+            "type": "string",
+            "nullable": true
+          },
+          "country": {
+            "type": "string",
+            "pattern": "^[A-Z]{2}$",
+            "description": "ISO 3166-1 alpha-2"
+          },
+          "phone": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "StoreShippingQuote": {
+        "type": "object",
+        "required": [
+          "optionId",
+          "name",
+          "amount"
+        ],
+        "properties": {
+          "optionId": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "amount": {
+            "type": "integer",
+            "description": "Minor units, in the cart currency"
+          }
+        }
+      },
+      "StoreShippingQuoteList": {
+        "type": "object",
+        "required": [
+          "data"
+        ],
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StoreShippingQuote"
+            }
+          }
+        }
+      },
+      "SetCartAddresses": {
+        "type": "object",
+        "required": [
+          "email",
+          "shippingAddress"
+        ],
+        "properties": {
+          "email": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 254
+          },
+          "shippingAddress": {
+            "type": "object",
+            "required": [
+              "firstName",
+              "lastName",
+              "line1",
+              "city",
+              "postalCode",
+              "country"
+            ],
+            "properties": {
+              "firstName": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              "lastName": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              "company": {
+                "type": "string",
+                "maxLength": 200,
+                "nullable": true
+              },
+              "line1": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              "line2": {
+                "type": "string",
+                "maxLength": 200,
+                "nullable": true
+              },
+              "city": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              "postalCode": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              "region": {
+                "type": "string",
+                "maxLength": 200,
+                "nullable": true
+              },
+              "country": {
+                "type": "string",
+                "pattern": "^[A-Z]{2}$",
+                "description": "ISO 3166-1 alpha-2"
+              },
+              "phone": {
+                "type": "string",
+                "maxLength": 200,
+                "nullable": true
+              }
+            },
+            "additionalProperties": false
+          },
+          "billingAddress": {
+            "description": "Omit to bill to the shipping address",
+            "type": "object",
+            "required": [
+              "firstName",
+              "lastName",
+              "line1",
+              "city",
+              "postalCode",
+              "country"
+            ],
+            "properties": {
+              "firstName": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              "lastName": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              "company": {
+                "type": "string",
+                "maxLength": 200,
+                "nullable": true
+              },
+              "line1": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              "line2": {
+                "type": "string",
+                "maxLength": 200,
+                "nullable": true
+              },
+              "city": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              "postalCode": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              "region": {
+                "type": "string",
+                "maxLength": 200,
+                "nullable": true
+              },
+              "country": {
+                "type": "string",
+                "pattern": "^[A-Z]{2}$",
+                "description": "ISO 3166-1 alpha-2"
+              },
+              "phone": {
+                "type": "string",
+                "maxLength": 200,
+                "nullable": true
+              }
+            },
+            "additionalProperties": false,
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "SelectShippingMethod": {
+        "type": "object",
+        "required": [
+          "optionId"
+        ],
+        "properties": {
+          "optionId": {
+            "type": "string",
+            "description": "One of the cart’s shipping options"
+          }
+        },
+        "additionalProperties": false
+      },
+      "StorePaymentMethod": {
+        "type": "object",
+        "required": [
+          "providerId",
+          "name"
+        ],
+        "properties": {
+          "providerId": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          }
+        }
+      },
+      "StorePaymentMethodList": {
+        "type": "object",
+        "required": [
+          "data"
+        ],
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StorePaymentMethod"
+            }
+          }
+        }
+      },
+      "StoreSelectedPayment": {
+        "type": "object",
+        "required": [
+          "providerId",
+          "name",
+          "sessionId",
+          "amount",
+          "clientData"
+        ],
+        "properties": {
+          "providerId": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "sessionId": {
+            "type": "string"
+          },
+          "amount": {
+            "type": "integer",
+            "description": "The total the payment was prepared for"
+          },
+          "clientData": {
+            "type": "object",
+            "description": "Opaque data exchanged with the payment provider",
+            "additionalProperties": {}
+          }
+        }
+      },
+      "SelectPaymentMethod": {
+        "type": "object",
+        "required": [
+          "providerId"
+        ],
+        "properties": {
+          "providerId": {
+            "type": "string",
+            "description": "One of the cart’s payment methods"
+          },
+          "data": {
+            "type": "object",
+            "description": "Opaque data exchanged with the payment provider",
+            "additionalProperties": {}
+          }
+        },
+        "additionalProperties": false
+      },
+      "StoreOrder": {
+        "type": "object",
+        "required": [
+          "id",
+          "number",
+          "status",
+          "currency",
+          "email",
+          "shippingAddress",
+          "billingAddress",
+          "shippingMethod",
+          "lines",
+          "subtotal",
+          "adjustments",
+          "total",
+          "placedAt"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Keep it private: anyone with the id can read the order"
+          },
+          "number": {
+            "type": "integer",
+            "description": "Human-readable and sequential"
+          },
+          "status": {
+            "enum": [
+              "placed",
+              "completed",
+              "canceled"
+            ]
+          },
+          "currency": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "shippingAddress": {
+            "$ref": "#/components/schemas/StoreAddress"
+          },
+          "billingAddress": {
+            "$ref": "#/components/schemas/StoreAddress"
+          },
+          "shippingMethod": {
+            "type": "object",
+            "required": [
+              "name",
+              "amount"
+            ],
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "amount": {
+                "type": "integer",
+                "description": "Minor units, in the cart currency"
+              }
+            }
+          },
+          "lines": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "id",
+                "variantId",
+                "productHandle",
+                "productTitle",
+                "variantTitle",
+                "sku",
+                "quantity",
+                "unitPrice",
+                "originalUnitPrice",
+                "total"
+              ],
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "variantId": {
+                  "type": "string"
+                },
+                "productHandle": {
+                  "type": "string"
+                },
+                "productTitle": {
+                  "type": "string"
+                },
+                "variantTitle": {
+                  "type": "string"
+                },
+                "sku": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "quantity": {
+                  "type": "integer"
+                },
+                "unitPrice": {
+                  "type": "integer",
+                  "description": "Minor units, in the cart currency"
+                },
+                "originalUnitPrice": {
+                  "type": "integer",
+                  "description": "Minor units, in the cart currency",
+                  "nullable": true
+                },
+                "total": {
+                  "type": "integer",
+                  "description": "Minor units, in the cart currency"
+                }
+              }
+            }
+          },
+          "subtotal": {
+            "type": "integer",
+            "description": "Minor units, in the cart currency"
+          },
+          "adjustments": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "kind",
+                "label",
+                "amount",
+                "lineId",
+                "included"
+              ],
+              "properties": {
+                "kind": {
+                  "type": "string"
+                },
+                "label": {
+                  "type": "string"
+                },
+                "amount": {
+                  "type": "integer"
+                },
+                "lineId": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "included": {
+                  "type": "boolean"
+                }
+              }
+            }
+          },
+          "total": {
+            "type": "integer",
+            "description": "Minor units, in the cart currency"
+          },
+          "placedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      }
+    }
+  },
+  "paths": {
+    "/store/v1/channel": {
+      "get": {
+        "operationId": "getCurrentChannel",
+        "summary": "The channel selected by the publishable key",
+        "tags": [
+          "channel"
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "name",
+                    "defaultCurrency",
+                    "currencies",
+                    "defaultLocale",
+                    "locales"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "defaultCurrency": {
+                      "type": "string"
+                    },
+                    "currencies": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "defaultLocale": {
+                      "type": "string"
+                    },
+                    "locales": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object",
+                          "description": "Extra data for some codes, e.g. clientData",
+                          "additionalProperties": {}
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/store/v1/products": {
+      "get": {
+        "operationId": "listProducts",
+        "summary": "Published products listed in the channel, newest first",
+        "tags": [
+          "catalog"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Z]{3}$"
+            },
+            "in": "query",
+            "name": "currency",
+            "required": false,
+            "description": "One of the channel's currencies; defaults to its default currency"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "name": "category",
+            "required": false,
+            "description": "Category handle"
+          },
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20
+            },
+            "in": "query",
+            "name": "limit",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "name": "after",
+            "required": false,
+            "description": "`nextCursor` from the previous page; anything else is rejected with 400 `invalid_cursor`"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data",
+                    "nextCursor"
+                  ],
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/StoreProduct"
+                      }
+                    },
+                    "nextCursor": {
+                      "description": "Pass as `after` for the next page",
+                      "type": "string",
+                      "nullable": true
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object",
+                          "description": "Extra data for some codes, e.g. clientData",
+                          "additionalProperties": {}
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object",
+                          "description": "Extra data for some codes, e.g. clientData",
+                          "additionalProperties": {}
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/store/v1/products/{handle}": {
+      "get": {
+        "operationId": "getProduct",
+        "tags": [
+          "catalog"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Z]{3}$"
+            },
+            "in": "query",
+            "name": "currency",
+            "required": false,
+            "description": "One of the channel's currencies; defaults to its default currency"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "path",
+            "name": "handle",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "id",
+                    "handle",
+                    "title",
+                    "description",
+                    "options",
+                    "variants",
+                    "categoryIds"
+                  ],
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "handle": {
+                      "type": "string"
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "description": {
+                      "type": "string",
+                      "nullable": true
+                    },
+                    "options": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/StoreProductOption"
+                      }
+                    },
+                    "variants": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/StoreVariant"
+                      }
+                    },
+                    "categoryIds": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object",
+                          "description": "Extra data for some codes, e.g. clientData",
+                          "additionalProperties": {}
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object",
+                          "description": "Extra data for some codes, e.g. clientData",
+                          "additionalProperties": {}
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object",
+                          "description": "Extra data for some codes, e.g. clientData",
+                          "additionalProperties": {}
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/store/v1/categories": {
+      "get": {
+        "operationId": "listCategories",
+        "tags": [
+          "catalog"
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/StoreCategory"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object",
+                          "description": "Extra data for some codes, e.g. clientData",
+                          "additionalProperties": {}
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/store/v1/carts": {
+      "post": {
+        "operationId": "createCart",
+        "tags": [
+          "cart"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "currency": {
+                    "type": "string",
+                    "pattern": "^[A-Z]{3}$",
+                    "description": "One of the channel's currencies; defaults to its default currency"
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StoreCart"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object",
+                          "description": "Extra data for some codes, e.g. clientData",
+                          "additionalProperties": {}
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object",
+                          "description": "Extra data for some codes, e.g. clientData",
+                          "additionalProperties": {}
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/store/v1/carts/{id}": {
+      "get": {
+        "operationId": "getCart",
+        "tags": [
+          "cart"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "path",
+            "name": "id",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StoreCart"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object",
+                          "description": "Extra data for some codes, e.g. clientData",
+                          "additionalProperties": {}
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object",
+                          "description": "Extra data for some codes, e.g. clientData",
+                          "additionalProperties": {}
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/store/v1/carts/{id}/lines": {
+      "post": {
+        "operationId": "addCartLine",
+        "summary": "Add a variant, or raise its quantity if it is already in the cart",
+        "tags": [
+          "cart"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "variantId",
+                  "quantity"
+                ],
+                "properties": {
+                  "variantId": {
+                    "type": "string"
+                  },
+                  "quantity": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 1000
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "path",
+            "name": "id",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StoreCart"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object",
+                          "description": "Extra data for some codes, e.g. clientData",
+                          "additionalProperties": {}
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object",
+                          "description": "Extra data for some codes, e.g. clientData",
+                          "additionalProperties": {}
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object",
+                          "description": "Extra data for some codes, e.g. clientData",
+                          "additionalProperties": {}
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object",
+                          "description": "Extra data for some codes, e.g. clientData",
+                          "additionalProperties": {}
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object",
+                          "description": "Extra data for some codes, e.g. clientData",
+                          "additionalProperties": {}
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/store/v1/carts/{id}/lines/{lineId}": {
+      "patch": {
+        "operationId": "updateCartLine",
+        "summary": "Set a line's quantity",
+        "tags": [
+          "cart"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "quantity"
+                ],
+                "properties": {
+                  "quantity": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 1000
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "path",
+            "name": "id",
+            "required": true
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "path",
+            "name": "lineId",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StoreCart"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object",
+                          "description": "Extra data for some codes, e.g. clientData",
+                          "additionalProperties": {}
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object",
+                          "description": "Extra data for some codes, e.g. clientData",
+                          "additionalProperties": {}
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object",
+                          "description": "Extra data for some codes, e.g. clientData",
+                          "additionalProperties": {}
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object",
+                          "description": "Extra data for some codes, e.g. clientData",
+                          "additionalProperties": {}
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object",
+                          "description": "Extra data for some codes, e.g. clientData",
+                          "additionalProperties": {}
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "operationId": "removeCartLine",
+        "tags": [
+          "cart"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "path",
+            "name": "id",
+            "required": true
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "path",
+            "name": "lineId",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StoreCart"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object",
+                          "description": "Extra data for some codes, e.g. clientData",
+                          "additionalProperties": {}
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object",
+                          "description": "Extra data for some codes, e.g. clientData",
+                          "additionalProperties": {}
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object",
+                          "description": "Extra data for some codes, e.g. clientData",
+                          "additionalProperties": {}
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object",
+                          "description": "Extra data for some codes, e.g. clientData",
+                          "additionalProperties": {}
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object",
+                          "description": "Extra data for some codes, e.g. clientData",
+                          "additionalProperties": {}
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/store/v1/carts/{id}/addresses": {
+      "post": {
+        "operationId": "setCartAddresses",
+        "summary": "Checkout step: contact email and addresses",
+        "tags": [
+          "checkout"
+        ],
+        "description": "Changing the shipping address drops a chosen shipping method.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "email",
+                  "shippingAddress"
+                ],
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "minLength": 3,
+                    "maxLength": 254
+                  },
+                  "shippingAddress": {
+                    "type": "object",
+                    "required": [
+                      "firstName",
+                      "lastName",
+                      "line1",
+                      "city",
+                      "postalCode",
+                      "country"
+                    ],
+                    "properties": {
+                      "firstName": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 200
+                      },
+                      "lastName": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 200
+                      },
+                      "company": {
+                        "type": "string",
+                        "maxLength": 200,
+                        "nullable": true
+                      },
+                      "line1": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 200
+                      },
+                      "line2": {
+                        "type": "string",
+                        "maxLength": 200,
+                        "nullable": true
+                      },
+                      "city": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 200
+                      },
+                      "postalCode": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 200
+                      },
+                      "region": {
+                        "type": "string",
+                        "maxLength": 200,
+                        "nullable": true
+                      },
+                      "country": {
+                        "type": "string",
+                        "pattern": "^[A-Z]{2}$",
+                        "description": "ISO 3166-1 alpha-2"
+                      },
+                      "phone": {
+                        "type": "string",
+                        "maxLength": 200,
+                        "nullable": true
+                      }
+                    },
+                    "additionalProperties": false
+                  },
+                  "billingAddress": {
+                    "description": "Omit to bill to the shipping address",
+                    "type": "object",
+                    "required": [
+                      "firstName",
+                      "lastName",
+                      "line1",
+                      "city",
+                      "postalCode",
+                      "country"
+                    ],
+                    "properties": {
+                      "firstName": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 200
+                      },
+                      "lastName": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 200
+                      },
+                      "company": {
+                        "type": "string",
+                        "maxLength": 200,
+                        "nullable": true
+                      },
+                      "line1": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 200
+                      },
+                      "line2": {
+                        "type": "string",
+                        "maxLength": 200,
+                        "nullable": true
+                      },
+                      "city": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 200
+                      },
+                      "postalCode": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 200
+                      },
+                      "region": {
+                        "type": "string",
+                        "maxLength": 200,
+                        "nullable": true
+                      },
+                      "country": {
+                        "type": "string",
+                        "pattern": "^[A-Z]{2}$",
+                        "description": "ISO 3166-1 alpha-2"
+                      },
+                      "phone": {
+                        "type": "string",
+                        "maxLength": 200,
+                        "nullable": true
+                      }
+                    },
+                    "additionalProperties": false,
+                    "nullable": true
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "path",
+            "name": "id",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StoreCart"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object",
+                          "description": "Extra data for some codes, e.g. clientData",
+                          "additionalProperties": {}
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object",
+                          "description": "Extra data for some codes, e.g. clientData",
+                          "additionalProperties": {}
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object",
+                          "description": "Extra data for some codes, e.g. clientData",
+                          "additionalProperties": {}
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object",
+                          "description": "Extra data for some codes, e.g. clientData",
+                          "additionalProperties": {}
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object",
+                          "description": "Extra data for some codes, e.g. clientData",
+                          "additionalProperties": {}
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/store/v1/carts/{id}/shipping-options": {
+      "get": {
+        "operationId": "listCartShippingOptions",
+        "summary": "Shipping options for the cart’s address and currency, cheapest first",
+        "tags": [
+          "checkout"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "path",
+            "name": "id",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StoreShippingQuoteList"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object",
+                          "description": "Extra data for some codes, e.g. clientData",
+                          "additionalProperties": {}
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object",
+                          "description": "Extra data for some codes, e.g. clientData",
+                          "additionalProperties": {}
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object",
+                          "description": "Extra data for some codes, e.g. clientData",
+                          "additionalProperties": {}
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/store/v1/carts/{id}/shipping-method": {
+      "post": {
+        "operationId": "selectCartShippingMethod",
+        "summary": "Checkout step: choose one of the cart’s shipping options",
+        "tags": [
+          "checkout"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "optionId"
+                ],
+                "properties": {
+                  "optionId": {
+                    "type": "string",
+                    "description": "One of the cart’s shipping options"
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "path",
+            "name": "id",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StoreCart"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object",
+                          "description": "Extra data for some codes, e.g. clientData",
+                          "additionalProperties": {}
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object",
+                          "description": "Extra data for some codes, e.g. clientData",
+                          "additionalProperties": {}
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object",
+                          "description": "Extra data for some codes, e.g. clientData",
+                          "additionalProperties": {}
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object",
+                          "description": "Extra data for some codes, e.g. clientData",
+                          "additionalProperties": {}
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object",
+                          "description": "Extra data for some codes, e.g. clientData",
+                          "additionalProperties": {}
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/store/v1/carts/{id}/payment-methods": {
+      "get": {
+        "operationId": "listCartPaymentMethods",
+        "summary": "Payment methods offered in the cart’s channel",
+        "tags": [
+          "checkout"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "path",
+            "name": "id",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StorePaymentMethodList"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object",
+                          "description": "Extra data for some codes, e.g. clientData",
+                          "additionalProperties": {}
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object",
+                          "description": "Extra data for some codes, e.g. clientData",
+                          "additionalProperties": {}
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/store/v1/carts/{id}/payment-method": {
+      "post": {
+        "operationId": "selectCartPaymentMethod",
+        "summary": "Checkout step: choose a payment method; prepares a payment for the cart total",
+        "tags": [
+          "checkout"
+        ],
+        "description": "Returns the provider’s client data for the payment form. If the cart changes while the payment is prepared, the step fails with cart_changed and can be repeated.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "providerId"
+                ],
+                "properties": {
+                  "providerId": {
+                    "type": "string",
+                    "description": "One of the cart’s payment methods"
+                  },
+                  "data": {
+                    "type": "object",
+                    "description": "Opaque data exchanged with the payment provider",
+                    "additionalProperties": {}
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "path",
+            "name": "id",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StoreCart"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object",
+                          "description": "Extra data for some codes, e.g. clientData",
+                          "additionalProperties": {}
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object",
+                          "description": "Extra data for some codes, e.g. clientData",
+                          "additionalProperties": {}
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object",
+                          "description": "Extra data for some codes, e.g. clientData",
+                          "additionalProperties": {}
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object",
+                          "description": "Extra data for some codes, e.g. clientData",
+                          "additionalProperties": {}
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object",
+                          "description": "Extra data for some codes, e.g. clientData",
+                          "additionalProperties": {}
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/store/v1/carts/{id}/complete": {
+      "post": {
+        "operationId": "completeCart",
+        "summary": "Place the order: re-checks prices, authorizes the payment, creates the order",
+        "tags": [
+          "checkout"
+        ],
+        "description": "Safe to retry. The cart, not the key, makes this idempotent: once the cart is placed, any call returns its order with 200 (201 the first time). While an attempt is still running, calls get 409 completion_in_progress; keep retrying with backoff, or poll GET /carts/{id} until checkoutState is placed and orderId is set. Stop retrying on any other error. On payment_requires_action, error.details.clientData says what the shopper must do. Where the channel captures payments immediately, the payment is captured once the order exists; a failed capture does not fail this call.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "path",
+            "name": "id",
+            "required": true
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 255
+            },
+            "in": "header",
+            "name": "idempotency-key",
+            "required": true,
+            "description": "One key per \"place order\" action; reuse it when retrying that action"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StoreOrder"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StoreOrder"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object",
+                          "description": "Extra data for some codes, e.g. clientData",
+                          "additionalProperties": {}
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object",
+                          "description": "Extra data for some codes, e.g. clientData",
+                          "additionalProperties": {}
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object",
+                          "description": "Extra data for some codes, e.g. clientData",
+                          "additionalProperties": {}
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object",
+                          "description": "Extra data for some codes, e.g. clientData",
+                          "additionalProperties": {}
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object",
+                          "description": "Extra data for some codes, e.g. clientData",
+                          "additionalProperties": {}
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object",
+                          "description": "Extra data for some codes, e.g. clientData",
+                          "additionalProperties": {}
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/store/v1/orders/{id}": {
+      "get": {
+        "operationId": "getOrder",
+        "tags": [
+          "orders"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "path",
+            "name": "id",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StoreOrder"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object",
+                          "description": "Extra data for some codes, e.g. clientData",
+                          "additionalProperties": {}
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object",
+                          "description": "Extra data for some codes, e.g. clientData",
+                          "additionalProperties": {}
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "security": [
+    {
+      "publishableKey": []
+    }
+  ]
+}

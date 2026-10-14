@@ -1,0 +1,5856 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Trestle Admin API",
+    "version": "1.0.0"
+  },
+  "components": {
+    "securitySchemes": {
+      "bearer": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    },
+    "schemas": {
+      "Error": {
+        "type": "object",
+        "required": [
+          "error"
+        ],
+        "properties": {
+          "error": {
+            "type": "object",
+            "required": [
+              "code",
+              "message"
+            ],
+            "properties": {
+              "code": {
+                "type": "string"
+              },
+              "message": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      },
+      "Channel": {
+        "type": "object",
+        "required": [
+          "id",
+          "code",
+          "name",
+          "defaultCurrency",
+          "currencies",
+          "defaultLocale",
+          "locales",
+          "createdAt"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "defaultCurrency": {
+            "type": "string",
+            "pattern": "^[A-Z]{3}$",
+            "description": "ISO 4217 code"
+          },
+          "currencies": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[A-Z]{3}$",
+              "description": "ISO 4217 code"
+            }
+          },
+          "defaultLocale": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 35,
+            "description": "BCP 47 language tag"
+          },
+          "locales": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 2,
+              "maxLength": 35,
+              "description": "BCP 47 language tag"
+            }
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "ChannelList": {
+        "type": "object",
+        "required": [
+          "data"
+        ],
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Channel"
+            }
+          }
+        }
+      },
+      "CreateChannel": {
+        "type": "object",
+        "required": [
+          "code",
+          "name",
+          "defaultCurrency",
+          "defaultLocale"
+        ],
+        "properties": {
+          "code": {
+            "type": "string",
+            "pattern": "^[a-z0-9][a-z0-9-]{0,62}$",
+            "description": "Stable, URL-safe identifier"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "defaultCurrency": {
+            "type": "string",
+            "pattern": "^[A-Z]{3}$",
+            "description": "ISO 4217 code"
+          },
+          "currencies": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[A-Z]{3}$",
+              "description": "ISO 4217 code"
+            },
+            "uniqueItems": true
+          },
+          "defaultLocale": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 35,
+            "description": "BCP 47 language tag"
+          },
+          "locales": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 2,
+              "maxLength": 35,
+              "description": "BCP 47 language tag"
+            },
+            "uniqueItems": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "PublishableKey": {
+        "type": "object",
+        "required": [
+          "key",
+          "channelId",
+          "createdAt"
+        ],
+        "properties": {
+          "key": {
+            "type": "string"
+          },
+          "channelId": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "ProductOption": {
+        "type": "object",
+        "required": [
+          "name",
+          "values"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "values": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100
+            },
+            "minItems": 1,
+            "uniqueItems": true
+          }
+        }
+      },
+      "VariantOptionValue": {
+        "type": "object",
+        "required": [
+          "name",
+          "value"
+        ],
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "value": {
+            "type": "string"
+          }
+        }
+      },
+      "Variant": {
+        "type": "object",
+        "required": [
+          "id",
+          "productId",
+          "sku",
+          "title",
+          "options",
+          "position"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "productId": {
+            "type": "string"
+          },
+          "sku": {
+            "type": "string",
+            "nullable": true
+          },
+          "title": {
+            "type": "string"
+          },
+          "options": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/VariantOptionValue"
+            }
+          },
+          "position": {
+            "type": "integer"
+          }
+        }
+      },
+      "Product": {
+        "type": "object",
+        "required": [
+          "id",
+          "handle",
+          "title",
+          "description",
+          "status",
+          "options",
+          "variants",
+          "categoryIds",
+          "channelIds",
+          "createdAt",
+          "updatedAt"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "handle": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
+            "enum": [
+              "draft",
+              "published",
+              "archived"
+            ],
+            "description": "Only `published` products are visible in the Store API"
+          },
+          "options": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProductOption"
+            }
+          },
+          "variants": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Variant"
+            }
+          },
+          "categoryIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "channelIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "ProductPage": {
+        "type": "object",
+        "required": [
+          "data",
+          "nextCursor"
+        ],
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Product"
+            }
+          },
+          "nextCursor": {
+            "description": "Pass as `after` for the next page",
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "CreateVariant": {
+        "type": "object",
+        "properties": {
+          "sku": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "options": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "name",
+                "value"
+              ],
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "value": {
+                  "type": "string"
+                }
+              },
+              "additionalProperties": false
+            },
+            "description": "One value per product option"
+          }
+        },
+        "additionalProperties": false
+      },
+      "CreateProduct": {
+        "type": "object",
+        "required": [
+          "handle",
+          "title"
+        ],
+        "properties": {
+          "handle": {
+            "type": "string",
+            "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+            "maxLength": 100,
+            "description": "Stable, URL-safe name, e.g. `blue-t-shirt`"
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
+            "enum": [
+              "draft",
+              "published",
+              "archived"
+            ],
+            "description": "Only `published` products are visible in the Store API"
+          },
+          "options": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "name",
+                "values"
+              ],
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 100
+                },
+                "values": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 100
+                  },
+                  "minItems": 1,
+                  "uniqueItems": true
+                }
+              },
+              "additionalProperties": false
+            }
+          },
+          "variants": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "sku": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 100
+                },
+                "title": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                },
+                "options": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "required": [
+                      "name",
+                      "value"
+                    ],
+                    "properties": {
+                      "name": {
+                        "type": "string"
+                      },
+                      "value": {
+                        "type": "string"
+                      }
+                    },
+                    "additionalProperties": false
+                  },
+                  "description": "One value per product option"
+                }
+              },
+              "additionalProperties": false
+            },
+            "description": "Required when the product has options; otherwise one default variant is created"
+          }
+        },
+        "additionalProperties": false
+      },
+      "UpdateProduct": {
+        "type": "object",
+        "properties": {
+          "handle": {
+            "type": "string",
+            "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+            "maxLength": 100,
+            "description": "Stable, URL-safe name, e.g. `blue-t-shirt`"
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
+            "enum": [
+              "draft",
+              "published",
+              "archived"
+            ],
+            "description": "Only `published` products are visible in the Store API"
+          }
+        },
+        "additionalProperties": false,
+        "minProperties": 1
+      },
+      "SetProductChannels": {
+        "type": "object",
+        "required": [
+          "channelIds"
+        ],
+        "properties": {
+          "channelIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "uniqueItems": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "SetProductCategories": {
+        "type": "object",
+        "required": [
+          "categoryIds"
+        ],
+        "properties": {
+          "categoryIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "uniqueItems": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "Category": {
+        "type": "object",
+        "required": [
+          "id",
+          "parentId",
+          "handle",
+          "name",
+          "position",
+          "createdAt"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "parentId": {
+            "type": "string",
+            "nullable": true
+          },
+          "handle": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "position": {
+            "type": "integer"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "CategoryList": {
+        "type": "object",
+        "required": [
+          "data"
+        ],
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Category"
+            }
+          }
+        }
+      },
+      "CreateCategory": {
+        "type": "object",
+        "required": [
+          "handle",
+          "name"
+        ],
+        "properties": {
+          "handle": {
+            "type": "string",
+            "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+            "maxLength": 100,
+            "description": "Stable, URL-safe name, e.g. `blue-t-shirt`"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "parentId": {
+            "type": "string",
+            "nullable": true
+          },
+          "position": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "additionalProperties": false
+      },
+      "Price": {
+        "type": "object",
+        "required": [
+          "id",
+          "variantId",
+          "priceListId",
+          "currency",
+          "amount",
+          "channelId",
+          "minQuantity"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "variantId": {
+            "type": "string"
+          },
+          "priceListId": {
+            "description": "Null for a base price",
+            "type": "string",
+            "nullable": true
+          },
+          "currency": {
+            "type": "string",
+            "pattern": "^[A-Z]{3}$",
+            "description": "ISO 4217 code"
+          },
+          "amount": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991,
+            "description": "Minor units, e.g. cents"
+          },
+          "channelId": {
+            "description": "Null when the price applies in every channel",
+            "type": "string",
+            "nullable": true
+          },
+          "minQuantity": {
+            "type": "integer",
+            "minimum": 1
+          }
+        }
+      },
+      "PriceCollection": {
+        "type": "object",
+        "required": [
+          "data"
+        ],
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Price"
+            }
+          }
+        }
+      },
+      "SetVariantPrices": {
+        "type": "object",
+        "required": [
+          "prices"
+        ],
+        "properties": {
+          "prices": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "currency",
+                "amount"
+              ],
+              "properties": {
+                "currency": {
+                  "type": "string",
+                  "pattern": "^[A-Z]{3}$",
+                  "description": "ISO 4217 code"
+                },
+                "amount": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991,
+                  "description": "Minor units, e.g. cents"
+                },
+                "channelId": {
+                  "description": "Omit for every channel",
+                  "type": "string",
+                  "nullable": true
+                },
+                "minQuantity": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "description": "Tier pricing: applies from this quantity up"
+                }
+              },
+              "additionalProperties": false
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "SetPriceListPrices": {
+        "type": "object",
+        "required": [
+          "prices"
+        ],
+        "properties": {
+          "prices": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "variantId",
+                "currency",
+                "amount"
+              ],
+              "properties": {
+                "variantId": {
+                  "type": "string"
+                },
+                "currency": {
+                  "type": "string",
+                  "pattern": "^[A-Z]{3}$",
+                  "description": "ISO 4217 code"
+                },
+                "amount": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991,
+                  "description": "Minor units, e.g. cents"
+                },
+                "channelId": {
+                  "description": "Omit for every channel",
+                  "type": "string",
+                  "nullable": true
+                },
+                "minQuantity": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "description": "Tier pricing: applies from this quantity up"
+                }
+              },
+              "additionalProperties": false
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "PriceList": {
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "type",
+          "status",
+          "priority",
+          "startsAt",
+          "endsAt",
+          "createdAt",
+          "updatedAt"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "type": {
+            "enum": [
+              "sale",
+              "override"
+            ],
+            "description": "`sale` prices apply only when lower than the regular price, which is then shown as the original; `override` prices replace the regular price, lower or not"
+          },
+          "status": {
+            "enum": [
+              "draft",
+              "active"
+            ],
+            "description": "Prices of an `active` list apply inside its validity window"
+          },
+          "priority": {
+            "type": "integer",
+            "description": "Between live lists of the same type, the higher priority wins"
+          },
+          "startsAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "endsAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "PriceListList": {
+        "type": "object",
+        "required": [
+          "data"
+        ],
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PriceList"
+            }
+          }
+        }
+      },
+      "CreatePriceList": {
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "type": {
+            "enum": [
+              "sale",
+              "override"
+            ],
+            "description": "`sale` prices apply only when lower than the regular price, which is then shown as the original; `override` prices replace the regular price, lower or not"
+          },
+          "status": {
+            "enum": [
+              "draft",
+              "active"
+            ],
+            "description": "Prices of an `active` list apply inside its validity window"
+          },
+          "priority": {
+            "type": "integer",
+            "minimum": -1000,
+            "maximum": 1000
+          },
+          "startsAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "endsAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "UpdatePriceList": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "type": {
+            "enum": [
+              "sale",
+              "override"
+            ],
+            "description": "`sale` prices apply only when lower than the regular price, which is then shown as the original; `override` prices replace the regular price, lower or not"
+          },
+          "status": {
+            "enum": [
+              "draft",
+              "active"
+            ],
+            "description": "Prices of an `active` list apply inside its validity window"
+          },
+          "priority": {
+            "type": "integer",
+            "minimum": -1000,
+            "maximum": 1000
+          },
+          "startsAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "endsAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "minProperties": 1
+      },
+      "ShippingOption": {
+        "type": "object",
+        "required": [
+          "id",
+          "channelId",
+          "name",
+          "countries",
+          "active",
+          "prices",
+          "createdAt",
+          "updatedAt"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "channelId": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "countries": {
+            "description": "Countries the option ships to; null for every country",
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[A-Z]{2}$",
+              "description": "ISO 3166-1 alpha-2"
+            },
+            "minItems": 1,
+            "uniqueItems": true,
+            "nullable": true
+          },
+          "active": {
+            "type": "boolean"
+          },
+          "prices": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "currency",
+                "amount"
+              ],
+              "properties": {
+                "currency": {
+                  "type": "string",
+                  "pattern": "^[A-Z]{3}$",
+                  "description": "ISO 4217 code"
+                },
+                "amount": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991,
+                  "description": "Minor units, e.g. cents"
+                }
+              }
+            }
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "ShippingOptionList": {
+        "type": "object",
+        "required": [
+          "data"
+        ],
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ShippingOption"
+            }
+          }
+        }
+      },
+      "CreateShippingOption": {
+        "type": "object",
+        "required": [
+          "channelId",
+          "name",
+          "prices"
+        ],
+        "properties": {
+          "channelId": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "countries": {
+            "description": "Countries the option ships to; null for every country",
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[A-Z]{2}$",
+              "description": "ISO 3166-1 alpha-2"
+            },
+            "minItems": 1,
+            "uniqueItems": true,
+            "nullable": true
+          },
+          "active": {
+            "type": "boolean"
+          },
+          "prices": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "currency",
+                "amount"
+              ],
+              "properties": {
+                "currency": {
+                  "type": "string",
+                  "pattern": "^[A-Z]{3}$",
+                  "description": "ISO 4217 code"
+                },
+                "amount": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991,
+                  "description": "Minor units, e.g. cents"
+                }
+              },
+              "additionalProperties": false
+            },
+            "minItems": 1,
+            "description": "A flat price per currency; each must be one of the channel’s currencies"
+          }
+        },
+        "additionalProperties": false
+      },
+      "UpdateShippingOption": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "countries": {
+            "description": "Countries the option ships to; null for every country",
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[A-Z]{2}$",
+              "description": "ISO 3166-1 alpha-2"
+            },
+            "minItems": 1,
+            "uniqueItems": true,
+            "nullable": true
+          },
+          "active": {
+            "type": "boolean"
+          },
+          "prices": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "currency",
+                "amount"
+              ],
+              "properties": {
+                "currency": {
+                  "type": "string",
+                  "pattern": "^[A-Z]{3}$",
+                  "description": "ISO 4217 code"
+                },
+                "amount": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991,
+                  "description": "Minor units, e.g. cents"
+                }
+              },
+              "additionalProperties": false
+            },
+            "minItems": 1,
+            "description": "A flat price per currency; each must be one of the channel’s currencies"
+          }
+        },
+        "additionalProperties": false,
+        "minProperties": 1
+      },
+      "PaymentProvider": {
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "supportsDeferredCapture",
+          "testMode",
+          "channels"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "supportsDeferredCapture": {
+            "type": "boolean",
+            "description": "Whether channels may capture its payments manually"
+          },
+          "testMode": {
+            "type": "boolean",
+            "description": "Moves no real money; never enable it on a live channel"
+          },
+          "channels": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "channelId",
+                "captureMode"
+              ],
+              "properties": {
+                "channelId": {
+                  "type": "string"
+                },
+                "captureMode": {
+                  "enum": [
+                    "immediate",
+                    "manual"
+                  ],
+                  "description": "immediate: captured as soon as the order is placed. manual: authorized only; capture it from the order"
+                }
+              }
+            },
+            "description": "Channels whose shoppers are offered this provider"
+          }
+        }
+      },
+      "PaymentProviderList": {
+        "type": "object",
+        "required": [
+          "data"
+        ],
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PaymentProvider"
+            }
+          }
+        }
+      },
+      "SetPaymentProviderChannels": {
+        "type": "object",
+        "required": [
+          "channels"
+        ],
+        "properties": {
+          "channels": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "channelId"
+              ],
+              "properties": {
+                "channelId": {
+                  "type": "string"
+                },
+                "captureMode": {
+                  "enum": [
+                    "immediate",
+                    "manual"
+                  ],
+                  "description": "immediate: captured as soon as the order is placed. manual: authorized only; capture it from the order",
+                  "default": "immediate"
+                }
+              },
+              "additionalProperties": false
+            },
+            "description": "Each channel at most once"
+          }
+        },
+        "additionalProperties": false
+      },
+      "Order": {
+        "type": "object",
+        "required": [
+          "id",
+          "number",
+          "cartId",
+          "channelId",
+          "status",
+          "currency",
+          "email",
+          "shippingAddress",
+          "billingAddress",
+          "shippingMethod",
+          "lines",
+          "subtotal",
+          "adjustments",
+          "adjustmentsTotal",
+          "total",
+          "payment",
+          "placedAt"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "number": {
+            "type": "integer"
+          },
+          "cartId": {
+            "type": "string"
+          },
+          "channelId": {
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "placed",
+              "completed",
+              "canceled"
+            ]
+          },
+          "currency": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "shippingAddress": {
+            "type": "object",
+            "required": [
+              "firstName",
+              "lastName",
+              "company",
+              "line1",
+              "line2",
+              "city",
+              "postalCode",
+              "region",
+              "country",
+              "phone"
+            ],
+            "properties": {
+              "firstName": {
+                "type": "string"
+              },
+              "lastName": {
+                "type": "string"
+              },
+              "company": {
+                "type": "string",
+                "nullable": true
+              },
+              "line1": {
+                "type": "string"
+              },
+              "line2": {
+                "type": "string",
+                "nullable": true
+              },
+              "city": {
+                "type": "string"
+              },
+              "postalCode": {
+                "type": "string"
+              },
+              "region": {
+                "type": "string",
+                "nullable": true
+              },
+              "country": {
+                "type": "string"
+              },
+              "phone": {
+                "type": "string",
+                "nullable": true
+              }
+            }
+          },
+          "billingAddress": {
+            "type": "object",
+            "required": [
+              "firstName",
+              "lastName",
+              "company",
+              "line1",
+              "line2",
+              "city",
+              "postalCode",
+              "region",
+              "country",
+              "phone"
+            ],
+            "properties": {
+              "firstName": {
+                "type": "string"
+              },
+              "lastName": {
+                "type": "string"
+              },
+              "company": {
+                "type": "string",
+                "nullable": true
+              },
+              "line1": {
+                "type": "string"
+              },
+              "line2": {
+                "type": "string",
+                "nullable": true
+              },
+              "city": {
+                "type": "string"
+              },
+              "postalCode": {
+                "type": "string"
+              },
+              "region": {
+                "type": "string",
+                "nullable": true
+              },
+              "country": {
+                "type": "string"
+              },
+              "phone": {
+                "type": "string",
+                "nullable": true
+              }
+            }
+          },
+          "shippingMethod": {
+            "type": "object",
+            "required": [
+              "optionId",
+              "name",
+              "amount"
+            ],
+            "properties": {
+              "optionId": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "amount": {
+                "type": "integer",
+                "description": "Minor units, in the order currency"
+              }
+            }
+          },
+          "lines": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "id",
+                "variantId",
+                "productId",
+                "productHandle",
+                "productTitle",
+                "variantTitle",
+                "sku",
+                "quantity",
+                "unitPrice",
+                "originalUnitPrice",
+                "subtotal",
+                "total"
+              ],
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "variantId": {
+                  "type": "string"
+                },
+                "productId": {
+                  "type": "string"
+                },
+                "productHandle": {
+                  "type": "string"
+                },
+                "productTitle": {
+                  "type": "string"
+                },
+                "variantTitle": {
+                  "type": "string"
+                },
+                "sku": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "quantity": {
+                  "type": "integer"
+                },
+                "unitPrice": {
+                  "type": "integer",
+                  "description": "Minor units, in the order currency"
+                },
+                "originalUnitPrice": {
+                  "type": "integer",
+                  "description": "Minor units, in the order currency",
+                  "nullable": true
+                },
+                "subtotal": {
+                  "type": "integer",
+                  "description": "Minor units, in the order currency"
+                },
+                "total": {
+                  "type": "integer",
+                  "description": "Minor units, in the order currency"
+                }
+              }
+            }
+          },
+          "subtotal": {
+            "type": "integer",
+            "description": "Minor units, in the order currency"
+          },
+          "adjustments": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "kind",
+                "label",
+                "amount",
+                "lineId",
+                "included",
+                "source"
+              ],
+              "properties": {
+                "kind": {
+                  "type": "string"
+                },
+                "label": {
+                  "type": "string"
+                },
+                "amount": {
+                  "type": "integer"
+                },
+                "lineId": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "included": {
+                  "type": "boolean"
+                },
+                "source": {
+                  "type": "string",
+                  "description": "The adjuster that produced it"
+                }
+              }
+            }
+          },
+          "adjustmentsTotal": {
+            "type": "integer"
+          },
+          "total": {
+            "type": "integer",
+            "description": "Minor units, in the order currency"
+          },
+          "payment": {
+            "type": "object",
+            "required": [
+              "providerId",
+              "sessionId"
+            ],
+            "properties": {
+              "providerId": {
+                "type": "string"
+              },
+              "sessionId": {
+                "type": "string"
+              }
+            }
+          },
+          "placedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "OrderPage": {
+        "type": "object",
+        "required": [
+          "data",
+          "nextCursor"
+        ],
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Order"
+            }
+          },
+          "nextCursor": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "OrderPayment": {
+        "type": "object",
+        "required": [
+          "sessionId",
+          "providerId",
+          "providerName",
+          "status",
+          "captureMode",
+          "currency",
+          "amount",
+          "capturedAmount",
+          "authorizationExpiresAt",
+          "transactions"
+        ],
+        "properties": {
+          "sessionId": {
+            "type": "string"
+          },
+          "providerId": {
+            "type": "string"
+          },
+          "providerName": {
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "pending",
+              "requires_action",
+              "authorized",
+              "partially_captured",
+              "captured",
+              "canceled",
+              "failed"
+            ]
+          },
+          "captureMode": {
+            "enum": [
+              "immediate",
+              "manual"
+            ]
+          },
+          "currency": {
+            "type": "string"
+          },
+          "amount": {
+            "type": "integer",
+            "description": "Minor units, in the order currency"
+          },
+          "capturedAmount": {
+            "type": "integer",
+            "description": "Minor units, in the order currency"
+          },
+          "authorizationExpiresAt": {
+            "description": "When the provider releases the uncaptured amount, if it said",
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "transactions": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "id",
+                "kind",
+                "status",
+                "amount",
+                "reference",
+                "reason",
+                "createdAt"
+              ],
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "kind": {
+                  "enum": [
+                    "authorize",
+                    "capture",
+                    "cancel",
+                    "refund"
+                  ]
+                },
+                "status": {
+                  "enum": [
+                    "succeeded",
+                    "failed",
+                    "requires_action",
+                    "error"
+                  ],
+                  "description": "error: the provider itself failed, as opposed to declining"
+                },
+                "amount": {
+                  "type": "integer",
+                  "description": "Minor units, in the order currency"
+                },
+                "reference": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "reason": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "createdAt": {
+                  "type": "string",
+                  "format": "date-time"
+                }
+              }
+            },
+            "description": "Every call to the provider, oldest first"
+          }
+        }
+      },
+      "CaptureOrderPayment": {
+        "type": "object",
+        "properties": {
+          "amount": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "Minor units; defaults to everything not captured yet. Less is a partial capture"
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "paths": {
+    "/admin/v1/channels": {
+      "get": {
+        "operationId": "listChannels",
+        "tags": [
+          "channel"
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Channel"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "createChannel",
+        "tags": [
+          "channel"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "code",
+                  "name",
+                  "defaultCurrency",
+                  "defaultLocale"
+                ],
+                "properties": {
+                  "code": {
+                    "type": "string",
+                    "pattern": "^[a-z0-9][a-z0-9-]{0,62}$",
+                    "description": "Stable, URL-safe identifier"
+                  },
+                  "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200
+                  },
+                  "defaultCurrency": {
+                    "type": "string",
+                    "pattern": "^[A-Z]{3}$",
+                    "description": "ISO 4217 code"
+                  },
+                  "currencies": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "pattern": "^[A-Z]{3}$",
+                      "description": "ISO 4217 code"
+                    },
+                    "uniqueItems": true
+                  },
+                  "defaultLocale": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 35,
+                    "description": "BCP 47 language tag"
+                  },
+                  "locales": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 2,
+                      "maxLength": 35,
+                      "description": "BCP 47 language tag"
+                    },
+                    "uniqueItems": true
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "id",
+                    "code",
+                    "name",
+                    "defaultCurrency",
+                    "currencies",
+                    "defaultLocale",
+                    "locales",
+                    "createdAt"
+                  ],
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "code": {
+                      "type": "string"
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "defaultCurrency": {
+                      "type": "string",
+                      "pattern": "^[A-Z]{3}$",
+                      "description": "ISO 4217 code"
+                    },
+                    "currencies": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "pattern": "^[A-Z]{3}$",
+                        "description": "ISO 4217 code"
+                      }
+                    },
+                    "defaultLocale": {
+                      "type": "string",
+                      "minLength": 2,
+                      "maxLength": 35,
+                      "description": "BCP 47 language tag"
+                    },
+                    "locales": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "minLength": 2,
+                        "maxLength": 35,
+                        "description": "BCP 47 language tag"
+                      }
+                    },
+                    "createdAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/v1/channels/{id}/publishable-keys": {
+      "post": {
+        "operationId": "createPublishableKey",
+        "tags": [
+          "channel"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "path",
+            "name": "id",
+            "required": true
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "key",
+                    "channelId",
+                    "createdAt"
+                  ],
+                  "properties": {
+                    "key": {
+                      "type": "string"
+                    },
+                    "channelId": {
+                      "type": "string"
+                    },
+                    "createdAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/v1/products": {
+      "get": {
+        "operationId": "listProducts",
+        "tags": [
+          "catalog"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "enum": [
+                "draft",
+                "published",
+                "archived"
+              ]
+            },
+            "in": "query",
+            "name": "status",
+            "required": false,
+            "description": "Only `published` products are visible in the Store API"
+          },
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20
+            },
+            "in": "query",
+            "name": "limit",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "name": "after",
+            "required": false,
+            "description": "`nextCursor` from the previous page; anything else is rejected with 400 `invalid_cursor`"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data",
+                    "nextCursor"
+                  ],
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Product"
+                      }
+                    },
+                    "nextCursor": {
+                      "description": "Pass as `after` for the next page",
+                      "type": "string",
+                      "nullable": true
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "createProduct",
+        "tags": [
+          "catalog"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "handle",
+                  "title"
+                ],
+                "properties": {
+                  "handle": {
+                    "type": "string",
+                    "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+                    "maxLength": 100,
+                    "description": "Stable, URL-safe name, e.g. `blue-t-shirt`"
+                  },
+                  "title": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200
+                  },
+                  "description": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "status": {
+                    "enum": [
+                      "draft",
+                      "published",
+                      "archived"
+                    ],
+                    "description": "Only `published` products are visible in the Store API"
+                  },
+                  "options": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "required": [
+                        "name",
+                        "values"
+                      ],
+                      "properties": {
+                        "name": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 100
+                        },
+                        "values": {
+                          "type": "array",
+                          "items": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 100
+                          },
+                          "minItems": 1,
+                          "uniqueItems": true
+                        }
+                      },
+                      "additionalProperties": false
+                    }
+                  },
+                  "variants": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "sku": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 100
+                        },
+                        "title": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 200
+                        },
+                        "options": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "required": [
+                              "name",
+                              "value"
+                            ],
+                            "properties": {
+                              "name": {
+                                "type": "string"
+                              },
+                              "value": {
+                                "type": "string"
+                              }
+                            },
+                            "additionalProperties": false
+                          },
+                          "description": "One value per product option"
+                        }
+                      },
+                      "additionalProperties": false
+                    },
+                    "description": "Required when the product has options; otherwise one default variant is created"
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "id",
+                    "handle",
+                    "title",
+                    "description",
+                    "status",
+                    "options",
+                    "variants",
+                    "categoryIds",
+                    "channelIds",
+                    "createdAt",
+                    "updatedAt"
+                  ],
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "handle": {
+                      "type": "string"
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "description": {
+                      "type": "string",
+                      "nullable": true
+                    },
+                    "status": {
+                      "enum": [
+                        "draft",
+                        "published",
+                        "archived"
+                      ],
+                      "description": "Only `published` products are visible in the Store API"
+                    },
+                    "options": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ProductOption"
+                      }
+                    },
+                    "variants": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Variant"
+                      }
+                    },
+                    "categoryIds": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "channelIds": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "createdAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "updatedAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/v1/products/{id}": {
+      "get": {
+        "operationId": "getProduct",
+        "tags": [
+          "catalog"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "path",
+            "name": "id",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "id",
+                    "handle",
+                    "title",
+                    "description",
+                    "status",
+                    "options",
+                    "variants",
+                    "categoryIds",
+                    "channelIds",
+                    "createdAt",
+                    "updatedAt"
+                  ],
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "handle": {
+                      "type": "string"
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "description": {
+                      "type": "string",
+                      "nullable": true
+                    },
+                    "status": {
+                      "enum": [
+                        "draft",
+                        "published",
+                        "archived"
+                      ],
+                      "description": "Only `published` products are visible in the Store API"
+                    },
+                    "options": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ProductOption"
+                      }
+                    },
+                    "variants": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Variant"
+                      }
+                    },
+                    "categoryIds": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "channelIds": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "createdAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "updatedAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "operationId": "updateProduct",
+        "tags": [
+          "catalog"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "handle": {
+                    "type": "string",
+                    "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+                    "maxLength": 100,
+                    "description": "Stable, URL-safe name, e.g. `blue-t-shirt`"
+                  },
+                  "title": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200
+                  },
+                  "description": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "status": {
+                    "enum": [
+                      "draft",
+                      "published",
+                      "archived"
+                    ],
+                    "description": "Only `published` products are visible in the Store API"
+                  }
+                },
+                "additionalProperties": false,
+                "minProperties": 1
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "path",
+            "name": "id",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "id",
+                    "handle",
+                    "title",
+                    "description",
+                    "status",
+                    "options",
+                    "variants",
+                    "categoryIds",
+                    "channelIds",
+                    "createdAt",
+                    "updatedAt"
+                  ],
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "handle": {
+                      "type": "string"
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "description": {
+                      "type": "string",
+                      "nullable": true
+                    },
+                    "status": {
+                      "enum": [
+                        "draft",
+                        "published",
+                        "archived"
+                      ],
+                      "description": "Only `published` products are visible in the Store API"
+                    },
+                    "options": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ProductOption"
+                      }
+                    },
+                    "variants": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Variant"
+                      }
+                    },
+                    "categoryIds": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "channelIds": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "createdAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "updatedAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/v1/products/{id}/variants": {
+      "post": {
+        "operationId": "createVariant",
+        "tags": [
+          "catalog"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "sku": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 100
+                  },
+                  "title": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200
+                  },
+                  "options": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "required": [
+                        "name",
+                        "value"
+                      ],
+                      "properties": {
+                        "name": {
+                          "type": "string"
+                        },
+                        "value": {
+                          "type": "string"
+                        }
+                      },
+                      "additionalProperties": false
+                    },
+                    "description": "One value per product option"
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "path",
+            "name": "id",
+            "required": true
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Variant"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/v1/products/{id}/channels": {
+      "put": {
+        "operationId": "setProductChannels",
+        "summary": "Replace the channels a product is listed in",
+        "tags": [
+          "catalog"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "channelIds"
+                ],
+                "properties": {
+                  "channelIds": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "uniqueItems": true
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "path",
+            "name": "id",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "id",
+                    "handle",
+                    "title",
+                    "description",
+                    "status",
+                    "options",
+                    "variants",
+                    "categoryIds",
+                    "channelIds",
+                    "createdAt",
+                    "updatedAt"
+                  ],
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "handle": {
+                      "type": "string"
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "description": {
+                      "type": "string",
+                      "nullable": true
+                    },
+                    "status": {
+                      "enum": [
+                        "draft",
+                        "published",
+                        "archived"
+                      ],
+                      "description": "Only `published` products are visible in the Store API"
+                    },
+                    "options": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ProductOption"
+                      }
+                    },
+                    "variants": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Variant"
+                      }
+                    },
+                    "categoryIds": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "channelIds": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "createdAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "updatedAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/v1/products/{id}/categories": {
+      "put": {
+        "operationId": "setProductCategories",
+        "summary": "Replace the categories a product belongs to",
+        "tags": [
+          "catalog"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "categoryIds"
+                ],
+                "properties": {
+                  "categoryIds": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "uniqueItems": true
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "path",
+            "name": "id",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "id",
+                    "handle",
+                    "title",
+                    "description",
+                    "status",
+                    "options",
+                    "variants",
+                    "categoryIds",
+                    "channelIds",
+                    "createdAt",
+                    "updatedAt"
+                  ],
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "handle": {
+                      "type": "string"
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "description": {
+                      "type": "string",
+                      "nullable": true
+                    },
+                    "status": {
+                      "enum": [
+                        "draft",
+                        "published",
+                        "archived"
+                      ],
+                      "description": "Only `published` products are visible in the Store API"
+                    },
+                    "options": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ProductOption"
+                      }
+                    },
+                    "variants": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Variant"
+                      }
+                    },
+                    "categoryIds": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "channelIds": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "createdAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "updatedAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/v1/categories": {
+      "get": {
+        "operationId": "listCategories",
+        "tags": [
+          "catalog"
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Category"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "createCategory",
+        "tags": [
+          "catalog"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "handle",
+                  "name"
+                ],
+                "properties": {
+                  "handle": {
+                    "type": "string",
+                    "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+                    "maxLength": 100,
+                    "description": "Stable, URL-safe name, e.g. `blue-t-shirt`"
+                  },
+                  "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200
+                  },
+                  "parentId": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "position": {
+                    "type": "integer",
+                    "minimum": 0
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "id",
+                    "parentId",
+                    "handle",
+                    "name",
+                    "position",
+                    "createdAt"
+                  ],
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "parentId": {
+                      "type": "string",
+                      "nullable": true
+                    },
+                    "handle": {
+                      "type": "string"
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "position": {
+                      "type": "integer"
+                    },
+                    "createdAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/v1/variants/{id}/prices": {
+      "get": {
+        "operationId": "listVariantPrices",
+        "summary": "Base prices and price-list prices of a variant",
+        "tags": [
+          "pricing"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "path",
+            "name": "id",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PriceCollection"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "operationId": "setVariantPrices",
+        "summary": "Replace a variant's base prices",
+        "tags": [
+          "pricing"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "prices"
+                ],
+                "properties": {
+                  "prices": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "required": [
+                        "currency",
+                        "amount"
+                      ],
+                      "properties": {
+                        "currency": {
+                          "type": "string",
+                          "pattern": "^[A-Z]{3}$",
+                          "description": "ISO 4217 code"
+                        },
+                        "amount": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 9007199254740991,
+                          "description": "Minor units, e.g. cents"
+                        },
+                        "channelId": {
+                          "description": "Omit for every channel",
+                          "type": "string",
+                          "nullable": true
+                        },
+                        "minQuantity": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "description": "Tier pricing: applies from this quantity up"
+                        }
+                      },
+                      "additionalProperties": false
+                    }
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "path",
+            "name": "id",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PriceCollection"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/v1/price-lists": {
+      "get": {
+        "operationId": "listPriceLists",
+        "tags": [
+          "pricing"
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PriceListList"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "createPriceList",
+        "tags": [
+          "pricing"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "name"
+                ],
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200
+                  },
+                  "type": {
+                    "enum": [
+                      "sale",
+                      "override"
+                    ],
+                    "description": "`sale` prices apply only when lower than the regular price, which is then shown as the original; `override` prices replace the regular price, lower or not"
+                  },
+                  "status": {
+                    "enum": [
+                      "draft",
+                      "active"
+                    ],
+                    "description": "Prices of an `active` list apply inside its validity window"
+                  },
+                  "priority": {
+                    "type": "integer",
+                    "minimum": -1000,
+                    "maximum": 1000
+                  },
+                  "startsAt": {
+                    "type": "string",
+                    "format": "date-time",
+                    "nullable": true
+                  },
+                  "endsAt": {
+                    "type": "string",
+                    "format": "date-time",
+                    "nullable": true
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PriceList"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/v1/price-lists/{id}": {
+      "get": {
+        "operationId": "getPriceList",
+        "tags": [
+          "pricing"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "path",
+            "name": "id",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PriceList"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "operationId": "updatePriceList",
+        "tags": [
+          "pricing"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200
+                  },
+                  "type": {
+                    "enum": [
+                      "sale",
+                      "override"
+                    ],
+                    "description": "`sale` prices apply only when lower than the regular price, which is then shown as the original; `override` prices replace the regular price, lower or not"
+                  },
+                  "status": {
+                    "enum": [
+                      "draft",
+                      "active"
+                    ],
+                    "description": "Prices of an `active` list apply inside its validity window"
+                  },
+                  "priority": {
+                    "type": "integer",
+                    "minimum": -1000,
+                    "maximum": 1000
+                  },
+                  "startsAt": {
+                    "type": "string",
+                    "format": "date-time",
+                    "nullable": true
+                  },
+                  "endsAt": {
+                    "type": "string",
+                    "format": "date-time",
+                    "nullable": true
+                  }
+                },
+                "additionalProperties": false,
+                "minProperties": 1
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "path",
+            "name": "id",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PriceList"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/v1/price-lists/{id}/prices": {
+      "get": {
+        "operationId": "listPriceListPrices",
+        "tags": [
+          "pricing"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "path",
+            "name": "id",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PriceCollection"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "operationId": "setPriceListPrices",
+        "summary": "Replace every price in a price list",
+        "tags": [
+          "pricing"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "prices"
+                ],
+                "properties": {
+                  "prices": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "required": [
+                        "variantId",
+                        "currency",
+                        "amount"
+                      ],
+                      "properties": {
+                        "variantId": {
+                          "type": "string"
+                        },
+                        "currency": {
+                          "type": "string",
+                          "pattern": "^[A-Z]{3}$",
+                          "description": "ISO 4217 code"
+                        },
+                        "amount": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 9007199254740991,
+                          "description": "Minor units, e.g. cents"
+                        },
+                        "channelId": {
+                          "description": "Omit for every channel",
+                          "type": "string",
+                          "nullable": true
+                        },
+                        "minQuantity": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "description": "Tier pricing: applies from this quantity up"
+                        }
+                      },
+                      "additionalProperties": false
+                    }
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "path",
+            "name": "id",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PriceCollection"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/v1/shipping-options": {
+      "get": {
+        "operationId": "listShippingOptions",
+        "tags": [
+          "shipping"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "name": "channelId",
+            "required": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShippingOptionList"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "createShippingOption",
+        "tags": [
+          "shipping"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "channelId",
+                  "name",
+                  "prices"
+                ],
+                "properties": {
+                  "channelId": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200
+                  },
+                  "countries": {
+                    "description": "Countries the option ships to; null for every country",
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "pattern": "^[A-Z]{2}$",
+                      "description": "ISO 3166-1 alpha-2"
+                    },
+                    "minItems": 1,
+                    "uniqueItems": true,
+                    "nullable": true
+                  },
+                  "active": {
+                    "type": "boolean"
+                  },
+                  "prices": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "required": [
+                        "currency",
+                        "amount"
+                      ],
+                      "properties": {
+                        "currency": {
+                          "type": "string",
+                          "pattern": "^[A-Z]{3}$",
+                          "description": "ISO 4217 code"
+                        },
+                        "amount": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 9007199254740991,
+                          "description": "Minor units, e.g. cents"
+                        }
+                      },
+                      "additionalProperties": false
+                    },
+                    "minItems": 1,
+                    "description": "A flat price per currency; each must be one of the channel’s currencies"
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShippingOption"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/v1/shipping-options/{id}": {
+      "patch": {
+        "operationId": "updateShippingOption",
+        "tags": [
+          "shipping"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200
+                  },
+                  "countries": {
+                    "description": "Countries the option ships to; null for every country",
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "pattern": "^[A-Z]{2}$",
+                      "description": "ISO 3166-1 alpha-2"
+                    },
+                    "minItems": 1,
+                    "uniqueItems": true,
+                    "nullable": true
+                  },
+                  "active": {
+                    "type": "boolean"
+                  },
+                  "prices": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "required": [
+                        "currency",
+                        "amount"
+                      ],
+                      "properties": {
+                        "currency": {
+                          "type": "string",
+                          "pattern": "^[A-Z]{3}$",
+                          "description": "ISO 4217 code"
+                        },
+                        "amount": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 9007199254740991,
+                          "description": "Minor units, e.g. cents"
+                        }
+                      },
+                      "additionalProperties": false
+                    },
+                    "minItems": 1,
+                    "description": "A flat price per currency; each must be one of the channel’s currencies"
+                  }
+                },
+                "additionalProperties": false,
+                "minProperties": 1
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "path",
+            "name": "id",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShippingOption"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/v1/payment-providers": {
+      "get": {
+        "operationId": "listPaymentProviders",
+        "summary": "Payment providers registered in this deployment",
+        "tags": [
+          "payments"
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentProviderList"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/v1/payment-providers/{id}/channels": {
+      "put": {
+        "operationId": "setPaymentProviderChannels",
+        "summary": "Replace the channels that offer a payment provider, and how each captures",
+        "tags": [
+          "payments"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "channels"
+                ],
+                "properties": {
+                  "channels": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "required": [
+                        "channelId"
+                      ],
+                      "properties": {
+                        "channelId": {
+                          "type": "string"
+                        },
+                        "captureMode": {
+                          "enum": [
+                            "immediate",
+                            "manual"
+                          ],
+                          "description": "immediate: captured as soon as the order is placed. manual: authorized only; capture it from the order",
+                          "default": "immediate"
+                        }
+                      },
+                      "additionalProperties": false
+                    },
+                    "description": "Each channel at most once"
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "path",
+            "name": "id",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentProvider"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/v1/orders": {
+      "get": {
+        "operationId": "listOrders",
+        "summary": "Orders, newest first",
+        "tags": [
+          "orders"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "name": "channelId",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20
+            },
+            "in": "query",
+            "name": "limit",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "name": "after",
+            "required": false,
+            "description": "`nextCursor` from the previous page; anything else is rejected with 400 `invalid_cursor`"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderPage"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/v1/orders/{id}": {
+      "get": {
+        "operationId": "getOrder",
+        "tags": [
+          "orders"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "path",
+            "name": "id",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Order"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/v1/orders/{id}/payment": {
+      "get": {
+        "operationId": "getOrderPayment",
+        "summary": "The order’s payment and its ledger",
+        "tags": [
+          "orders"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "path",
+            "name": "id",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderPayment"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/v1/orders/{id}/payment/capture": {
+      "post": {
+        "operationId": "captureOrderPayment",
+        "summary": "Capture the order’s authorized payment, in full or in part",
+        "tags": [
+          "orders"
+        ],
+        "description": "For channels that capture manually, or when an immediate capture failed. Retrying with the same Idempotency-Key after a success returns the payment without capturing again. 409 payment_capture_in_progress: another capture is running. 402: the provider declined; 502: the provider failed, and retrying is safe. Send {} to capture everything not captured yet.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "amount": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "description": "Minor units; defaults to everything not captured yet. Less is a partial capture"
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "path",
+            "name": "id",
+            "required": true
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "in": "header",
+            "name": "idempotency-key",
+            "required": true,
+            "description": "One key per capture; reuse it when retrying"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderPayment"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "security": [
+    {
+      "bearer": []
+    }
+  ]
+}

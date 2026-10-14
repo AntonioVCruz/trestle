@@ -1,0 +1,110 @@
+---
+import { reachableStep, STEPS, stepIndex, type Step } from '../../lib/checkout.js';
+
+/**
+ * Checkout progress (1q): a list with the current step marked, and links back to steps already
+ * done. "Step 2 of 4" is in each page's heading.
+ */
+interface Props {
+  readonly current: Step;
+  /** Steps that need attention again, e.g. payment after prices changed (3d). */
+  readonly attention?: readonly Step[];
+}
+
+const { current, attention = [] } = Astro.props;
+const reachable = stepIndex(reachableStep(Astro.locals.cart!));
+const currentIndex = stepIndex(current);
+---
+
+<nav aria-label="Checkout progress" class="steps">
+  <ol role="list">
+    {
+      STEPS.map(({ step, label }, i) => {
+        const isCurrent = step === current;
+        const done = i < currentIndex && i <= reachable && !attention.includes(step);
+        const linked = !isCurrent && i <= reachable;
+        const mark = attention.includes(step) ? '!' : done ? '✓' : String(i + 1);
+        return (
+          <li class:list={{ current: isCurrent, done }}>
+            <span class="mark" aria-hidden="true">
+              {mark}
+            </span>
+            {linked ? (
+              <a href={`/checkout/${step}`}>
+                {label}
+                {done && <span class="visually-hidden"> (done)</span>}
+              </a>
+            ) : (
+              <span aria-current={isCurrent ? 'step' : undefined}>{label}</span>
+            )}
+          </li>
+        );
+      })
+    }
+  </ol>
+</nav>
+
+<style>
+  .steps {
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  ol {
+    display: flex;
+    justify-content: center;
+    gap: var(--space-2);
+    margin: 0 auto;
+    padding: var(--space-3) var(--space-2);
+    list-style: none;
+    font-size: 0.75rem;
+  }
+
+  li {
+    display: flex;
+    align-items: center;
+    gap: var(--space-1);
+  }
+
+  li + li::before {
+    content: '';
+    width: 0.5rem;
+    border-top: 1px solid var(--color-muted);
+    margin-right: var(--space-1);
+  }
+
+  .mark {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.5rem;
+    height: 1.5rem;
+    border: 1px solid var(--color-fg);
+    border-radius: 50%;
+    font-size: 0.75rem;
+  }
+
+  .done .mark {
+    background: var(--color-surface);
+  }
+
+  .current .mark {
+    background: var(--color-accent);
+    color: var(--color-on-accent);
+  }
+
+  .current {
+    font-weight: 600;
+  }
+
+  @media (min-width: 900px) {
+    ol {
+      gap: var(--space-6);
+      padding-inline: var(--space-4);
+      font-size: 0.9375rem;
+    }
+
+    li + li::before {
+      width: 4rem;
+    }
+  }
+</style>

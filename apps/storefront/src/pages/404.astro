@@ -1,0 +1,87 @@
+---
+import Base from '../layouts/Base.astro';
+
+// Not found (1y, 1z): unknown routes, and products or categories with no such handle.
+Astro.response.status = 404;
+const { categories } = Astro.locals;
+---
+
+<Base title="Page not found">
+  <div class="container not-found">
+    <p class="code" aria-hidden="true">404</p>
+    <h1>We can’t find that page</h1>
+    <p>The product or category may have moved or is no longer available.</p>
+    <a class="button" href="/">Back to the shop</a>
+    {
+      categories.length > 0 && (
+        <nav aria-labelledby="popular-categories">
+          <h2 id="popular-categories">Popular categories</h2>
+          <ul role="list">
+            {categories.map((category) => (
+              <li>
+                <a href={`/categories/${category.handle}`}>{category.name}</a>
+              </li>
+            ))}
+          </ul>
+        </nav>
+      )
+    }
+  </div>
+</Base>
+
+<style>
+  .not-found {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    max-width: 36rem;
+    padding-block: var(--space-12);
+    text-align: center;
+  }
+
+  .code {
+    margin: 0;
+    font-size: 4rem;
+    font-weight: 600;
+    line-height: 1;
+  }
+
+  h1 {
+    font-size: 1.75rem;
+    font-weight: 500;
+  }
+
+  p {
+    margin: 0;
+  }
+
+  nav {
+    margin-top: var(--space-6);
+    text-align: left;
+  }
+
+  h2 {
+    font-size: 0.9375rem;
+    font-weight: 500;
+    color: var(--color-muted);
+    padding-bottom: var(--space-2);
+  }
+
+  ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  li a {
+    display: flex;
+    justify-content: space-between;
+    padding-block: var(--space-3);
+    border-top: 1px solid var(--color-border);
+    text-decoration: none;
+  }
+
+  li a::after {
+    content: '›';
+  }
+</style>
